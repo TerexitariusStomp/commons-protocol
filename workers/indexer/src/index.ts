@@ -108,17 +108,38 @@ async function scan(env: Env) {
 }
 
 // Hydrate asset metadata (name/image/animation) from token_uri JSON.
-// Batches a few per cron run; ipfs:// is gatewayed via ipfs.io.
-const IPFS_GW = "https://ipfs.io/ipfs/";
+// Batches a few per cron run; token_uri is fetched via gateway fallback,
+// image/animation stored as raw ipfs:// URIs (proxied at query time).
+const IPFS_GWS = [
+  "https://gateway.pinata.cloud/ipfs/",
+  "https://ipfs.filebase.io/ipfs/",
+  "https://nftstorage.link/ipfs/",
+];
+async function fetchIpfs(cidPath: string): Promise<Response | null> {
+  for (const gw of IPFS_GWS) {
+    try {
+      const r = await fetch(gw + cidPath, { signal: AbortSignal.timeout(8000) });
+      if (r.ok) return r;
+    } catch { /* try next gateway */ }
+  }
+  return null;
+}
+const toIpfsUri = (u: unknown): string | null => {
+  if (!u) return null;
+  const s = String(u);
+  if (s.startsWith("ipfs://")) return s;
+  const i = s.indexOf("/ipfs/");
+  return i >= 0 ? "ipfs://" + s.slice(i + 6) : null;
+};
 async function hydrateMetadata(env: Env) {
   const { results } = await env.DB.prepare(
     "SELECT chain_id, collection_address, token_id, token_uri FROM assets WHERE (image IS NULL OR image='') AND token_uri IS NOT NULL AND token_uri!='' LIMIT 10"
   ).all();
   for (const r of results as any[]) {
     try {
-      const uri = String(r.token_uri).replace(/^ipfs:\/\//, IPFS_GW);
-      const res = await fetch(uri, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) continue;
+      const cidPath = String(r.token_uri).replace(/^ipfs:\/\//, "");
+      const res = await fetchIpfs(cidPath);
+      if (!res) continue;
       const meta = (await res.json()) as any;
       const image = meta.image ?? meta.image_url ?? "";
       const anim = meta.animation_url ?? null;
@@ -127,8 +148,8 @@ async function hydrateMetadata(env: Env) {
       )
         .bind(
           String(meta.name ?? ""),
-          image ? String(image).replace(/^ipfs:\/\//, IPFS_GW) : "",
-          anim ? String(anim).replace(/^ipfs:\/\//, IPFS_GW) : null,
+          toIpfsUri(image) ?? (image ? String(image) : ""),
+          toIpfsUri(anim) ?? anim,
           String(meta.description ?? ""),
           r.chain_id,
           r.collection_address,
@@ -157,8 +178,22 @@ function json(data: unknown, init?: ResponseInit) {
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
+    // ---- ipfs media proxy (single origin for browsers; gateway fallback + edge cache) ----
+    if (url.pathname.startsWith("/ipfs/")) {
+      const cidPath = url.pathname.slice(6);
+      const cache = caches.default;
+      const cached = await cache.match(req);
+      if (cached) return cached;
+      const res = await fetchIpfs(cidPath);
+      if (!res) return new Response("not found", { status: 404 });
+      const out = new Response(res.body, res);
+      out.headers.set("cache-control", "public, max-age=31536000, immutable");
+      out.headers.set("access-control-allow-origin", "*");
+      ctx.waitUntil(cache.put(req, out.clone()));
+      return out;
+    }
     if (url.pathname === "/pools") {
       const { results } = await env.DB.prepare("SELECT * FROM pools ORDER BY created_block DESC").all();
       return json(results);
