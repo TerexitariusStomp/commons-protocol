@@ -98,6 +98,10 @@ function Layout({ children }: PropsWithChildren) {
       { href: '/', label: texts[locale].support },
       { href: '/', label: texts[locale].terms },
       { href: '/', label: texts[locale].privacy },
+      {
+        href: 'https://github.com/TerexitariusStomp/commons-protocol',
+        label: 'GitHub',
+      },
       { href: 'https://twitter.com', label: 'Twitter' },
       { href: 'https://discord.com', label: 'Discord' },
     ].filter(Boolean)
