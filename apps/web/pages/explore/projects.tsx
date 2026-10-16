@@ -24,6 +24,7 @@ const ARTIFACT_COLLECTION = '0x20cddf283164ee59742c80aa5ce9b97127f123ce'
 type Claim = {
   project: string
   name: string | null
+  description: string | null
   shortfall: string | null
   status: string
   royalty_bps: number | null
@@ -123,16 +124,14 @@ const ProjectsPage: NextPage = () => {
                         <Badge colorScheme="green">{t('explore.projects.claimed')}</Badge>
                       )}
                     </Flex>
+                    {p.description && (
+                      <Text fontSize="sm" color="gray.600" mt={1} noOfLines={3}>
+                        {p.description}
+                      </Text>
+                    )}
                     <Text variant="subtitle2" color="gray.500" mt={2}>
                       {t('explore.projects.artifacts', {
                         count: p.artifactCount ?? 0,
-                      })}
-                    </Text>
-                    <Text variant="subtitle2" color="gray.500">
-                      {t('explore.projects.shortfall', {
-                        amount: Number(
-                          parseFloat(p.shortfall ?? '0'),
-                        ).toLocaleString(),
                       })}
                     </Text>
                     <Text variant="subtitle2" color="brand.500" mt={1}>

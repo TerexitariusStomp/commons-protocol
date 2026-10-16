@@ -22,6 +22,7 @@ const ARTIFACT_COLLECTION = '0x20cddf283164ee59742c80aa5ce9b97127f123ce'
 type Fund = {
   id: string
   name: string
+  description: string | null
   mechanism: string | null
   projects: string | null
 }
@@ -103,6 +104,11 @@ const FundsExplorePage: NextPage = () => {
                     <Heading as="h3" variant="heading2" noOfLines={2}>
                       {f.name}
                     </Heading>
+                    {f.description && (
+                      <Text fontSize="sm" color="gray.600" mt={1} noOfLines={3}>
+                        {f.description}
+                      </Text>
+                    )}
                     <Text variant="subtitle2" color="gray.500" mt={2}>
                       {t('explore.funds.projects', {
                         count: (() => {

@@ -25,6 +25,7 @@ const INDEXER = process.env.NEXT_PUBLIC_INDEXER_URL || ''
 type Claim = {
   project: string
   name: string | null
+  description: string | null
   shortfall: string | null
   status: string
   royalty_bps: number | null
@@ -89,6 +90,11 @@ const ClaimProjectPage: NextPage = () => {
         <Heading as="h1" size="xl" mb={2}>
           {claim?.name ?? slug ?? 'Project'}
         </Heading>
+        {claim?.description && (
+          <Text color="gray.600" maxW="2xl" mb={3}>
+            {claim.description}
+          </Text>
+        )}
         <Text color="gray.500" maxW="2xl">
           Link the project treasury wallet and choose the share of artifact
           sales routed to it. Unclaimed proceeds are escrowed by the Pot.
@@ -99,9 +105,6 @@ const ClaimProjectPage: NextPage = () => {
       ) : (
         <Card maxW="lg">
           <CardBody>
-            <Text fontSize="sm" color="gray.500">
-              shortfall: {claim.shortfall ?? '—'}
-            </Text>
             <Badge
               mt={2}
               colorScheme={claim.status === 'claimed' ? 'green' : 'yellow'}

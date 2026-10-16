@@ -51,9 +51,6 @@ const ClaimPage: NextPage = () => {
               <Heading as="h3" size="md" mb={2}>
                 {c.project}
               </Heading>
-              <Text fontSize="sm" color="gray.500">
-                rescue target: {c.shortfall}
-              </Text>
               <Badge mt={2} colorScheme={c.status === 'claimed' ? 'green' : 'yellow'}>
                 {c.status}
               </Badge>

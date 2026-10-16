@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS funds (
   name TEXT,
   mechanism TEXT,
   pool TEXT,
-  projects TEXT -- json array
+  projects TEXT, -- json array
+  description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS contributions (
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS claims (
   status TEXT DEFAULT 'unclaimed', -- unclaimed|pending|claimed|disputed
   wallet TEXT,
   name TEXT,
+  description TEXT,
   royalty_bps INTEGER,
   telegram_chat TEXT,
   attestation TEXT,
