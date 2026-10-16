@@ -104,7 +104,7 @@ const ProjectsPage: NextPage = () => {
               {filtered.map((p) => (
                 <Link
                   key={p.project}
-                  href={`/explore?collection=1-${ARTIFACT_COLLECTION}&traits[project]=${encodeURIComponent(
+                  href={`/explore?collection=1-${ARTIFACT_COLLECTION}&traits[Project]=${encodeURIComponent(
                     p.name ?? p.project,
                   )}`}
                 >

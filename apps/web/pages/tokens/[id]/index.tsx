@@ -102,7 +102,7 @@ const DetailPage: NextPage = () => {
   const traits = asset && asset.traits.nodes.length > 0 && asset.traits.nodes
 
   const projectTrait = useMemo(
-    () => asset?.traits.nodes.find((x) => x.type === 'project'),
+    () => asset?.traits.nodes.find((x) => x.type === 'Project'),
     [asset?.traits.nodes],
   )
   const royaltyBps = useMemo(

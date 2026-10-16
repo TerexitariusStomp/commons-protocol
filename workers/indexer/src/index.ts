@@ -164,7 +164,7 @@ async function hydrateMetadata(env: Env) {
         await env.DB.prepare(
           "INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(?,?,?,?,?)"
         )
-          .bind(r.chain_id, r.collection_address, r.token_id, "project", String(claim?.name ?? slug))
+          .bind(r.chain_id, r.collection_address, r.token_id, "Project", String(claim?.name ?? slug))
           .run();
       }
       if (Array.isArray(meta.attributes)) {

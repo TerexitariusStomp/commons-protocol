@@ -79,12 +79,12 @@ for (let i = 0; i < entries.length; i += CONCURRENCY) {
     const pname = nameBySlug.get(slug) ?? slug;
     out.push(`UPDATE artifacts SET project=${esc(slug)} WHERE token_id=${esc(id)};`);
     out.push(
-      `INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(${CHAIN},${esc(CONTRACT)},${esc(id)},'project',${esc(pname)});`
+      `INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(${CHAIN},${esc(CONTRACT)},${esc(id)},'Project',${esc(pname)});`
     );
     for (const fslug of projectFunds.get(slug) ?? []) {
       const fname = fundMembers.get(fslug)?.name ?? fslug;
       out.push(
-        `INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(${CHAIN},${esc(CONTRACT)},${esc(id)},'fund',${esc(fname)});`
+        `INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(${CHAIN},${esc(CONTRACT)},${esc(id)},'Fund',${esc(fname)});`
       );
     }
   }
