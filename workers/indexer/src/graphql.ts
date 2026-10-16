@@ -28,7 +28,8 @@ const offerId = (chainId: number, pair: string) => `${chainId}-${pair}`;
 
 // Route ipfs media through our own /ipfs/ proxy (single browser origin,
 // gateway fallback + edge cache server-side).
-const MEDIA_ORIGIN = "https://commons-indexer.widespread.workers.dev";
+// Emit direct public-gateway URLs: browsers retrieve media client-side.
+// The Image component rotates through gateways on error for resilience.
 const media = (u?: string | null): string | null => {
   if (!u) return u ?? null;
   const s = String(u);
@@ -38,7 +39,7 @@ const media = (u?: string | null): string | null => {
       ? s.slice(s.indexOf("/ipfs/") + 6)
       : null;
   if (!cidPath) return s;
-  return `${MEDIA_ORIGIN}/ipfs/${cidPath}`;
+  return `https://gateway.pinata.cloud/ipfs/${cidPath}`;
 };
 
 function toAccount(row: any) {

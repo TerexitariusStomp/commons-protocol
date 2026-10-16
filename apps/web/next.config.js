@@ -25,7 +25,7 @@ const nextConfig = {
     externalDir: true,
   },
   images: {
-    minimumCacheTTL: 3600 * 24 * 365, // 1 year
+    unoptimized: true, // no optimizer on workers; resolve media client-side
     remotePatterns: [
       {
         protocol: 'https',
