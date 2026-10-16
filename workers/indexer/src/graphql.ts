@@ -250,13 +250,21 @@ async function q_assets(args: any, ctx: Ctx) {
     binds.push(s, s);
   }
   if (cond?.ids?.length) {
-    // ids are `${chainId}-${collectionAddress}-${tokenId}`
+    // AssetIdsCondition: { chainId, collectionAddress, tokenId }
     const ors: string[] = [];
-    for (const id of cond.ids as string[]) {
-      const m = id.match(/^(\d+)-(0x[0-9a-fA-F]{40})-(.+)$/);
-      if (m) {
+    for (const id of cond.ids as any[]) {
+      const cid = typeof id === "object" && id ? id.chainId : null;
+      const addr = typeof id === "object" && id ? id.collectionAddress : id;
+      const tid = typeof id === "object" && id ? id.tokenId : null;
+      if (cid != null && addr && tid != null) {
         ors.push("(chain_id=? AND lower(collection_address)=? AND token_id=?)");
-        binds.push(parseInt(m[1], 10), lower(m[2]), m[3]);
+        binds.push(parseInt(String(cid), 10), lower(String(addr)), String(tid));
+      } else if (typeof id === "string") {
+        const m = id.match(/^(\d+)-(0x[0-9a-fA-F]{40})-(.+)$/);
+        if (m) {
+          ors.push("(chain_id=? AND lower(collection_address)=? AND token_id=?)");
+          binds.push(parseInt(m[1], 10), lower(m[2]), m[3]);
+        }
       }
     }
     if (ors.length) where.push("(" + ors.join(" OR ") + ")");
@@ -503,7 +511,7 @@ async function m_checkoutApprovals(args: any, ctx: Ctx) {
   const router = ctx.env.ROUTER;
   const byCcy = new Map<string, bigint>();
   for (const it of items) {
-    const m = it.offerId.match(/^(\d+)[-:](0x[0-9a-fA-F]{40})/);
+    const m = String(it.offerId ?? "").match(/^(\d+)[-:](0x[0-9a-fA-F]{40})/);
     if (!m) continue;
     const pool = await ctx.env.DB.prepare("SELECT * FROM pools WHERE lower(pair)=?")
       .bind(lower(m[2])).first();

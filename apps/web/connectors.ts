@@ -50,15 +50,21 @@ function connectors(environment: Environment): ClientWithChain {
     connectors: ReturnType<typeof connectorsForWallets>
     wallets: WalletList
   } => {
+    // WalletConnect needs a real cloud projectId; a placeholder makes WC
+    // serve fallback metadata and throws ws 3000. Only enable WC wallets
+    // when a UUID-shaped projectId is configured.
+    const hasRealProjectId = /^[0-9a-f]{32}$/i.test(projectId ?? '')
     const wallets: WalletList = [
       {
         groupName: 'Popular',
         wallets: [
           injectedWallet({ chains, shimDisconnect }),
-          rainbowWallet({ chains, projectId, shimDisconnect }),
+          hasRealProjectId &&
+            rainbowWallet({ chains, projectId, shimDisconnect }),
           coinbaseWallet({ appName, chains }),
-          metaMaskWallet({ chains, projectId, shimDisconnect }),
-          walletConnectWallet({ chains, projectId }),
+          hasRealProjectId &&
+            metaMaskWallet({ chains, projectId, shimDisconnect }),
+          hasRealProjectId && walletConnectWallet({ chains, projectId }),
           braveWallet({ chains, shimDisconnect }),
           environment.MAGIC_API_KEY
             ? emailConnector({
