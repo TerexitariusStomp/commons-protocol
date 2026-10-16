@@ -498,28 +498,36 @@ async function q_collectionTraits(args: any, ctx: Ctx) {
   const where: string[] = [];
   if (cond.chainId) { where.push("chain_id=?"); binds.push(cond.chainId); }
   if (cond.address) { where.push("lower(collection_address)=?"); binds.push(lower(cond.address)); }
+  if (cond.search) { where.push("lower(type) LIKE ?"); binds.push(`%${lower(cond.search)}%`); }
   let sql = "SELECT * FROM collection_traits";
   if (where.length) sql += " WHERE " + where.join(" AND ");
-  sql += " LIMIT ?";
-  binds.push(Math.min(args?.first ?? 100, 500));
+  sql += " ORDER BY type, value LIMIT 5000";
   const { results } = await ctx.env.DB.prepare(sql).bind(...binds).all();
-  // group into CollectionTrait{type, values{value,count}}
+  // group into CollectionTrait{type, numberOfValues, values{value,count}},
+  // then paginate trait *types* (first/offset apply to types, not rows)
   const grouped = new Map<string, Map<string, number>>();
   for (const r of results as any[]) {
     if (!grouped.has(r.type)) grouped.set(r.type, new Map());
     const m = grouped.get(r.type)!;
     m.set(r.value, (m.get(r.value) ?? 0) + (r.count ?? 1));
   }
+  const limit = Math.min(args?.first ?? 8, 100);
+  const offset = args?.offset ?? 0;
+  const types = [...grouped.keys()].sort();
   return conn(
-    [...grouped.entries()].map(([type, vals]) => ({
-      type,
-      values: conn(
-        [...vals.entries()].map(([value, numberOfAssets]) => ({
-          value,
-          numberOfAssets,
-        })),
-      ),
-    })),
+    types.slice(offset, offset + limit).map((type) => {
+      const vals = grouped.get(type)!;
+      return {
+        type,
+        numberOfValues: vals.size,
+        values: conn(
+          [...vals.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(([value, numberOfAssets]) => ({ value, numberOfAssets })),
+        ),
+      };
+    }),
+    types.length > offset + limit,
   );
 }
 
