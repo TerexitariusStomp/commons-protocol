@@ -1,23 +1,35 @@
 #!/usr/bin/env bash
 # Custom-code budget: new commons-protocol code must stay below 5% of the
-# OSS/vendor baseline it composes. Baseline = vendored Solidity libs
-# (contracts/lib) plus vendored JS deps (apps/web/node_modules).
-# Custom = contracts/{src,test,script} + workers/*/src + apps/web/src.
+# OSS/vendor baseline it composes.
+#
+# Baseline = vendored Solidity libs (contracts/lib, incl. submodule libs)
+#          + vendored JS/TS deps (node_modules, npm-hoisted at root and any
+#            nested workspace copies).
+# Custom   = contracts/{src,test,script} + workers/*/src + apps/*/src
+#          + scripts/*.mjs + vendor/ (local stubs we maintain).
+# Measurement is deliberately inclusive on the custom side so the metric
+# can't be gamed by parking logic outside src/.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 baseline_sol=$(find contracts/lib -type f \( -name '*.sol' -o -name '*.vy' \) -exec cat {} + 2>/dev/null | wc -l)
 baseline_js=0
-if [ -d apps/web/node_modules ]; then
-  baseline_js=$(find apps/web/node_modules -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -exec cat {} + 2>/dev/null | wc -l)
-fi
+for nm in node_modules apps/*/node_modules workers/*/node_modules; do
+  if [ -d "$nm" ]; then
+    n=$(find "$nm" -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -exec cat {} + 2>/dev/null | wc -l)
+    baseline_js=$((baseline_js + n))
+  fi
+done
 baseline=$((baseline_sol + baseline_js))
 
 custom=$(find \
   contracts/src contracts/test contracts/script \
   workers \
-  apps/web/src \
-  -type f \( -name '*.sol' -o -name '*.vy' -o -name '*.ts' -o -name '*.tsx' -o -name '*.js' \) \
+  apps \
+  scripts \
+  vendor \
+  -type f \( -name '*.sol' -o -name '*.vy' -o -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' \) \
+  -not -path '*/node_modules/*' \
   -exec cat {} + 2>/dev/null | wc -l)
 
 if [ "$baseline" -eq 0 ]; then

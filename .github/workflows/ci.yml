@@ -18,10 +18,7 @@ jobs:
       - name: Custom LOC budget (<5%)
         run: bash scripts/custom-loc-budget.sh
       - name: Secret scan
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/v8.30.1/scripts/install.sh | bash -s -- -b /tmp bin || true
-          /tmp/bin/gitleaks detect --source . --no-git || true
-          /tmp/bin/gitleaks detect --source .
+        uses: gitleaks/gitleaks-action@v2
 
   contracts:
     runs-on: ubuntu-latest
