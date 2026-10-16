@@ -511,7 +511,11 @@
       "sign-out": "退出"
     },
     "about": "关于",
-    "points": "积分"
+    "points": "积分",
+    "community": "社区",
+    "allocate": "分配",
+    "pot": "The Pot",
+    "how": "运作方式"
   },
   "network-selection": {
     "title": "网络错误",

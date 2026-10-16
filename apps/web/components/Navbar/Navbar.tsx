@@ -140,6 +140,15 @@ const DrawerMenu: FC<{
             <Link href="/points">
               <NavItemMobile>{t('navbar.points')}</NavItemMobile>
             </Link>
+            <Link href="/allocate">
+              <NavItemMobile>{t('navbar.allocate')}</NavItemMobile>
+            </Link>
+            <Link href="/pot">
+              <NavItemMobile>{t('navbar.pot')}</NavItemMobile>
+            </Link>
+            <Link href="/how">
+              <NavItemMobile>{t('navbar.how')}</NavItemMobile>
+            </Link>
             <Link href="/about">
               <NavItemMobile>{t('navbar.about')}</NavItemMobile>
             </Link>
@@ -491,6 +500,32 @@ const Navbar: FC<{
               {t('navbar.points')}
             </Text>
           </Flex>
+          <Menu>
+            <MenuButton>
+              <Flex
+                color="brand.black"
+                align="center"
+                gap={1}
+                _hover={{ color: 'gray.500' }}
+              >
+                <Text as="span" variant="button2">
+                  {t('navbar.community')}
+                </Text>
+                <Icon as={HiChevronDown} h={4} w={4} />
+              </Flex>
+            </MenuButton>
+            <MenuList>
+              <MenuItem as={Link} href="/allocate">
+                {t('navbar.allocate')}
+              </MenuItem>
+              <MenuItem as={Link} href="/pot">
+                {t('navbar.pot')}
+              </MenuItem>
+              <MenuItem as={Link} href="/how">
+                {t('navbar.how')}
+              </MenuItem>
+            </MenuList>
+          </Menu>
           <Flex
             as={Link}
             href="/about"

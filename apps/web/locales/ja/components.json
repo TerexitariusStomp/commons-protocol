@@ -511,7 +511,11 @@
       "sign-out": "サインアウト"
     },
     "about": "概要",
-    "points": "ポイント"
+    "points": "ポイント",
+    "community": "コミュニティ",
+    "allocate": "配分",
+    "pot": "The Pot",
+    "how": "仕組み"
   },
   "network-selection": {
     "title": "間違ったネットワーク",

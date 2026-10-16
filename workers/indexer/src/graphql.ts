@@ -29,7 +29,7 @@ const offerId = (chainId: number, pair: string) => `${chainId}-${pair}`;
 // Route ipfs media through our own /ipfs/ proxy (single browser origin,
 // gateway fallback + edge cache server-side).
 const MEDIA_ORIGIN = "https://commons-indexer.widespread.workers.dev";
-const media = (u?: string | null, thumb = false): string | null => {
+const media = (u?: string | null): string | null => {
   if (!u) return u ?? null;
   const s = String(u);
   const cidPath = s.startsWith("ipfs://")
@@ -38,7 +38,7 @@ const media = (u?: string | null, thumb = false): string | null => {
       ? s.slice(s.indexOf("/ipfs/") + 6)
       : null;
   if (!cidPath) return s;
-  return `${MEDIA_ORIGIN}${thumb ? "/media/" : "/ipfs/"}${cidPath}`;
+  return `${MEDIA_ORIGIN}/ipfs/${cidPath}`;
 };
 
 function toAccount(row: any) {
@@ -46,8 +46,8 @@ function toAccount(row: any) {
   return {
     address: row.address,
     name: row.name ?? null,
-    image: media(row.image, true),
-    cover: media(row.cover, true),
+    image: media(row.image),
+    cover: media(row.cover),
     description: row.description ?? null,
     username: row.username ?? null,
     twitter: row.twitter ?? null,
@@ -63,8 +63,8 @@ function toCollection(row: any) {
     chainId: row.chain_id,
     address: row.address,
     name: row.name ?? "",
-    image: media(row.image, true),
-    cover: media(row.cover, true),
+    image: media(row.image),
+    cover: media(row.cover),
     description: row.description ?? null,
     standard: row.standard ?? "ERC1155",
     deployerAddress: row.deployer ?? "0x0000000000000000000000000000000000000000",
@@ -88,7 +88,7 @@ function toAsset(row: any, ctx: Ctx) {
     collectionAddress: row.collection_address,
     tokenId: row.token_id,
     name: row.name ?? `#${row.token_id}`,
-    image: media(row.image, true) ?? "",
+    image: media(row.image ?? ""),
     imageMimetype: row.image_mimetype ?? null,
     animationUrl: media(row.animation_url),
     animationMimetype: row.animation_mimetype ?? null,
@@ -387,7 +387,7 @@ function toAssetRef(r: any, ctx: Ctx) {
     collectionAddress: r.collection_address,
     tokenId: r.token_id,
     name: r.asset_name ?? `#${r.token_id}`,
-    image: media(r.asset_image, true) ?? "",
+    image: media(r.asset_image ?? ""),
     imageMimetype: r.asset_image_mimetype ?? null,
     animationUrl: media(r.asset_animation_url),
     collection: async (_a: any, c: Ctx) => {
@@ -491,7 +491,7 @@ async function q_currencies(args: any, ctx: Ctx) {
     decimals: r.decimals,
     symbol: r.symbol,
     name: r.name,
-    image: media(r.image, true),
+    image: media(r.image),
   })));
 }
 

@@ -511,7 +511,11 @@
       "sign-out": "Sign out"
     },
     "about": "About",
-    "points": "Points"
+    "points": "Points",
+    "community": "Community",
+    "allocate": "Allocate",
+    "pot": "The Pot",
+    "how": "How it works"
   },
   "network-selection": {
     "title": "Wrong network",

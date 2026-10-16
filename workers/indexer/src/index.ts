@@ -118,13 +118,16 @@ const IPFS_GWS = [
   "https://nftstorage.link/ipfs/",
 ];
 async function fetchIpfs(cidPath: string): Promise<Response | null> {
-  for (const gw of IPFS_GWS) {
-    try {
-      const r = await fetch(gw + cidPath, { signal: AbortSignal.timeout(8000) });
-      if (r.ok) return r;
-    } catch { /* try next gateway */ }
-  }
-  return null;
+  // race all gateways; first OK response wins, slow/dead ones are dropped
+  const res = await Promise.any(
+    IPFS_GWS.map((gw) =>
+      fetch(gw + cidPath, { signal: AbortSignal.timeout(20000) }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r;
+      })
+    )
+  ).catch(() => null);
+  return res;
 }
 const toIpfsUri = (u: unknown): string | null => {
   if (!u) return null;
@@ -222,27 +225,6 @@ export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     if (req.method === "OPTIONS") return corsPreflight();
-    // ---- precomputed image thumbnails (D1 blob store; fallback to full-size proxy) ----
-    if (url.pathname.startsWith("/media/")) {
-      const cid = url.pathname.slice(7);
-      const cache = caches.default;
-      const cached = await cache.match(req);
-      if (cached) return cached;
-      const row = await env.DB.prepare("SELECT data, ctype FROM thumbs WHERE cid=?").bind(cid).first();
-      if (row?.data) {
-        const out = new Response(row.data as ArrayBuffer, {
-          headers: {
-            "content-type": String(row.ctype ?? "image/webp"),
-            "cache-control": "public, max-age=31536000, immutable",
-            "access-control-allow-origin": "*",
-          },
-        });
-        ctx.waitUntil(cache.put(req, out.clone()));
-        return out;
-      }
-      // no thumbnail yet — fall back to the full-size ipfs proxy
-      return Response.redirect(`${url.origin}/ipfs/${cid}`, 302);
-    }
     // ---- ipfs media proxy (single origin for browsers; gateway fallback + edge cache) ----
     if (url.pathname.startsWith("/ipfs/")) {
       const cidPath = url.pathname.slice(6);

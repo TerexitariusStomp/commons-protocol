@@ -44,12 +44,6 @@ CREATE TABLE IF NOT EXISTS funds (
   created_by TEXT
 );
 
-CREATE TABLE IF NOT EXISTS thumbs (
-  cid TEXT PRIMARY KEY, -- ipfs cid path (no scheme)
-  data BLOB NOT NULL,
-  ctype TEXT NOT NULL DEFAULT 'image/webp'
-);
-
 -- points/allocation system (wallet-bound, signature-verified writes)
 CREATE TABLE IF NOT EXISTS points_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

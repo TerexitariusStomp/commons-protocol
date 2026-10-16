@@ -511,7 +511,11 @@
       "sign-out": "Cerrar sesión"
     },
     "about": "Acerca de",
-    "points": "Puntos"
+    "points": "Puntos",
+    "community": "Comunidad",
+    "allocate": "Asignar",
+    "pot": "El Pot",
+    "how": "Cómo funciona"
   },
   "network-selection": {
     "title": "Red Incorrecta",
