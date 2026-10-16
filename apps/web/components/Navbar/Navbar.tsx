@@ -137,6 +137,12 @@ const DrawerMenu: FC<{
             <Link href="/create">
               <NavItemMobile>{t('navbar.create')}</NavItemMobile>
             </Link>
+            <Link href="/points">
+              <NavItemMobile>{t('navbar.points')}</NavItemMobile>
+            </Link>
+            <Link href="/about">
+              <NavItemMobile>{t('navbar.about')}</NavItemMobile>
+            </Link>
             {account ? (
               <>
                 <Accordion as="nav" allowMultiple>
@@ -472,6 +478,28 @@ const Navbar: FC<{
           >
             <Text as="span" variant="button2">
               {t('navbar.create')}
+            </Text>
+          </Flex>
+          <Flex
+            as={Link}
+            href="/points"
+            color="brand.black"
+            align="center"
+            _hover={{ color: 'gray.500' }}
+          >
+            <Text as="span" variant="button2">
+              {t('navbar.points')}
+            </Text>
+          </Flex>
+          <Flex
+            as={Link}
+            href="/about"
+            color="brand.black"
+            align="center"
+            _hover={{ color: 'gray.500' }}
+          >
+            <Text as="span" variant="button2">
+              {t('navbar.about')}
             </Text>
           </Flex>
           {account ? (

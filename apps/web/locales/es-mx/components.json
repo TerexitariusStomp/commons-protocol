@@ -509,7 +509,9 @@
       "edit": "Editar perfil",
       "top-up": "Completar",
       "sign-out": "Cerrar sesión"
-    }
+    },
+    "about": "Acerca de",
+    "points": "Puntos"
   },
   "network-selection": {
     "title": "Red Incorrecta",

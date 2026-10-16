@@ -1,5 +1,7 @@
 import {
   Box,
+  Button,
+  Flex,
   Heading,
   SimpleGrid,
   Text,
@@ -17,7 +19,6 @@ import SkeletonUserCard from '../../components/Skeleton/UserCard'
 import useQueryParamSingle from '../../hooks/useQueryParamSingle'
 
 const INDEXER = process.env.NEXT_PUBLIC_INDEXER_URL || ''
-const ARTIFACT_COLLECTION = '0x20cddf283164ee59742c80aa5ce9b97127f123ce'
 
 type Fund = {
   id: string
@@ -25,6 +26,7 @@ type Fund = {
   description: string | null
   mechanism: string | null
   projects: string | null
+  status: string | null
 }
 
 const FundsExplorePage: NextPage = () => {
@@ -32,6 +34,7 @@ const FundsExplorePage: NextPage = () => {
   useBreakpointValue({ base: true, md: false }, { fallback: 'md' })
   const search = useQueryParamSingle('search')
   const [funds, setFunds] = useState<Fund[] | undefined>()
+  const [tab, setTab] = useState<'active' | 'proposed'>('active')
 
   useEffect(() => {
     if (!INDEXER) return
@@ -41,7 +44,10 @@ const FundsExplorePage: NextPage = () => {
         setFunds(
           rows.filter((f) => {
             try {
-              return (JSON.parse(f.projects ?? '[]') as string[]).length > 0
+              return (
+                f.status === 'proposed' ||
+                (JSON.parse(f.projects ?? '[]') as string[]).length > 0
+              )
             } catch {
               return false
             }
@@ -52,10 +58,15 @@ const FundsExplorePage: NextPage = () => {
   }, [])
 
   const filtered = useMemo(() => {
-    if (!search) return funds
+    const list = funds?.filter((f) =>
+      tab === 'proposed'
+        ? f.status === 'proposed'
+        : f.status !== 'proposed',
+    )
+    if (!search) return list
     const s = search.toLowerCase()
-    return funds?.filter((f) => f.name?.toLowerCase().includes(s))
-  }, [funds, search])
+    return list?.filter((f) => f.name?.toLowerCase().includes(s))
+  }, [funds, search, tab])
 
   return (
     <>
@@ -66,6 +77,26 @@ const FundsExplorePage: NextPage = () => {
         selectedTabIndex={4}
       >
         <>
+          <Flex gap={2} mt={4} align="center" flexWrap="wrap">
+            {(['active', 'proposed'] as const).map((k) => (
+              <Button
+                key={k}
+                size="sm"
+                rounded="full"
+                variant={tab === k ? 'solid' : 'outline'}
+                colorScheme="brand"
+                onClick={() => setTab(k)}
+              >
+                {t(`explore.funds.tabs.${k}`)}
+                {k === 'proposed' &&
+                  ` (${funds?.filter((f) => f.status === 'proposed').length ?? 0})`}
+              </Button>
+            ))}
+            <Box flex={1} />
+            <Button as={Link} href="/propose" size="sm" colorScheme="brand" rounded="xl">
+              {t('explore.funds.propose')}
+            </Button>
+          </Flex>
           {filtered === undefined ? (
             <SkeletonGrid
               items={12}
@@ -88,12 +119,7 @@ const FundsExplorePage: NextPage = () => {
               alignItems="stretch"
             >
               {filtered.map((f) => (
-                <Link
-                  key={f.id}
-                  href={`/collection/1/${ARTIFACT_COLLECTION}?traits[Fund]=${encodeURIComponent(
-                    f.name,
-                  )}`}
-                >
+                <Link key={f.id} href={`/funds/${f.id}`}>
                   <Box
                     borderWidth="1px"
                     borderRadius="xl"

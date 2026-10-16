@@ -509,7 +509,9 @@
       "edit": "プロフィールの編集",
       "top-up": "チャージ",
       "sign-out": "サインアウト"
-    }
+    },
+    "about": "概要",
+    "points": "ポイント"
   },
   "network-selection": {
     "title": "間違ったネットワーク",

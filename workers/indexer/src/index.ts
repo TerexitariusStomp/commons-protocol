@@ -8,6 +8,8 @@ import {
   type SimHolon,
 } from "./flow";
 import { handleGraphQL } from "./graphql";
+import { computeMatches, type Mechanism } from "./matching";
+import { POINT_RULES, PROPOSE_MIN_POINTS, award, currentSeason, pointsBalance } from "./points";
 
 export interface Env {
   DB: D1Database;
@@ -188,9 +190,59 @@ function json(data: unknown, init?: ResponseInit) {
   });
 }
 
+// EIP-191 signature check; `ts` must be within 10 min to bound replays.
+async function verifySig(wallet: string, message: string, signature: string, ts?: number) {
+  if (ts != null && Math.abs(Math.floor(Date.now() / 1000) - ts) > 600)
+    return { ok: false as const, error: "stale timestamp" };
+  try {
+    const { verifyMessage } = await import("viem");
+    const ok = await verifyMessage({
+      address: wallet as Address,
+      message,
+      signature: signature as `0x${string}`,
+    });
+    return ok ? { ok: true as const } : { ok: false as const, error: "bad signature" };
+  } catch {
+    return { ok: false as const, error: "verification failed" };
+  }
+}
+
+// OPTIONS preflight for the signed POST endpoints (frontend cross-origin).
+function corsPreflight() {
+  return new Response(null, {
+    headers: {
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "POST, GET, OPTIONS",
+      "access-control-allow-headers": "content-type, x-admin-key",
+    },
+  });
+}
+
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
+    if (req.method === "OPTIONS") return corsPreflight();
+    // ---- precomputed image thumbnails (D1 blob store; fallback to full-size proxy) ----
+    if (url.pathname.startsWith("/media/")) {
+      const cid = url.pathname.slice(7);
+      const cache = caches.default;
+      const cached = await cache.match(req);
+      if (cached) return cached;
+      const row = await env.DB.prepare("SELECT data, ctype FROM thumbs WHERE cid=?").bind(cid).first();
+      if (row?.data) {
+        const out = new Response(row.data as ArrayBuffer, {
+          headers: {
+            "content-type": String(row.ctype ?? "image/webp"),
+            "cache-control": "public, max-age=31536000, immutable",
+            "access-control-allow-origin": "*",
+          },
+        });
+        ctx.waitUntil(cache.put(req, out.clone()));
+        return out;
+      }
+      // no thumbnail yet — fall back to the full-size ipfs proxy
+      return Response.redirect(`${url.origin}/ipfs/${cid}`, 302);
+    }
     // ---- ipfs media proxy (single origin for browsers; gateway fallback + edge cache) ----
     if (url.pathname.startsWith("/ipfs/")) {
       const cidPath = url.pathname.slice(6);
@@ -255,8 +307,249 @@ export default {
       await env.DB.prepare(
         "UPDATE claims SET wallet=?, royalty_bps=?, status='claimed', claimed_at=unixepoch() WHERE project=?"
       ).bind(wallet.toLowerCase(), bps, project).run();
+      const season = await currentSeason(env.DB);
+      await award(env.DB, wallet, POINT_RULES.artizenAlumni, "claimProject", project, season.id);
       return json({ ok: true, project, wallet: wallet.toLowerCase(), royalty_bps: bps });
     }
+
+    // ---- points / allocation system (wallet-bound, signature-verified) ----
+    if (url.pathname === "/season") {
+      const s = await currentSeason(env.DB);
+      const { results } = await env.DB.prepare(
+        "SELECT fund_id, SUM(amount) pts FROM point_gifts WHERE season=? GROUP BY fund_id"
+      ).bind(s.id).all();
+      const totals: Record<string, number> = {};
+      for (const r of results as any[]) totals[r.fund_id] = r.pts;
+      // all-time backing for proposed funds (launch threshold, not season-scoped)
+      const { results: backing } = await env.DB.prepare(
+        "SELECT g.fund_id, SUM(g.amount) pts FROM point_gifts g JOIN funds f ON f.id=g.fund_id WHERE f.status='proposed' GROUP BY g.fund_id"
+      ).all();
+      const backingTotals: Record<string, number> = {};
+      for (const r of backing as any[]) backingTotals[r.fund_id] = r.pts;
+      const now = Math.floor(Date.now() / 1000);
+      return json({
+        id: s.id,
+        daysLeft: Math.max(0, Math.ceil((s.end_ts - now) / 86400)),
+        totals,
+        backingTotals,
+        rules: POINT_RULES,
+        proposeMinPoints: PROPOSE_MIN_POINTS,
+      });
+    }
+
+    if (url.pathname.startsWith("/points/") && req.method === "GET") {
+      const w = url.pathname.split("/")[2]?.toLowerCase();
+      if (!w) return json({ error: "wallet required" }, { status: 400 });
+      const s = await currentSeason(env.DB);
+      const [events, gifts] = await Promise.all([
+        env.DB.prepare(
+          "SELECT delta, reason, ref, season, ts FROM points_events WHERE lower(wallet)=? ORDER BY ts DESC LIMIT 200"
+        ).bind(w).all(),
+        env.DB.prepare(
+          "SELECT fund_id, SUM(amount) amount FROM point_gifts WHERE lower(wallet)=? AND season=? GROUP BY fund_id"
+        ).bind(w, s.id).all(),
+      ]);
+      const balance = await pointsBalance(env.DB, w);
+      return json({ balance, season: s.id, events: events.results, gifts: gifts.results });
+    }
+
+    if (url.pathname === "/points/allocate" && req.method === "POST") {
+      const { wallet, fundId, amount, ts, signature } = (await req.json()) as {
+        wallet?: string; fundId?: string; amount?: number; ts?: number; signature?: string;
+      };
+      if (!wallet || !fundId || !amount || !signature || ts == null)
+        return json({ error: "wallet, fundId, amount, ts, signature required" }, { status: 400 });
+      const amt = Math.floor(amount);
+      if (amt <= 0 || amt > 1_000_000) return json({ error: "invalid amount" }, { status: 400 });
+      const fund = await env.DB.prepare("SELECT id, status, points_goal FROM funds WHERE id=?")
+        .bind(fundId).first<{ id: string; status: string; points_goal: number | null }>();
+      if (!fund) return json({ error: "unknown fund" }, { status: 404 });
+      const s = await currentSeason(env.DB);
+      const v = await verifySig(
+        wallet,
+        `Commons allocate points\nWallet: ${wallet.toLowerCase()}\nFund: ${fundId}\nAmount: ${amt}\nSeason: ${s.id}\nTs: ${ts}`,
+        signature,
+        ts,
+      );
+      if (!v.ok) return json({ error: v.error }, { status: 401 });
+      const balance = await pointsBalance(env.DB, wallet);
+      if (balance < amt) return json({ error: "insufficient points", balance }, { status: 409 });
+      await env.DB.prepare(
+        "INSERT INTO point_gifts(wallet,fund_id,amount,season) VALUES(?,?,?,?)"
+      ).bind(wallet.toLowerCase(), fundId, amt, s.id).run();
+      await env.DB.prepare(
+        "INSERT INTO points_events(wallet,delta,reason,ref,season) VALUES(?,?,?,?,?)"
+      ).bind(wallet.toLowerCase(), -amt, "allocate", fundId, s.id).run();
+      // proposed funds activate once their points goal is met
+      if (fund.status === "proposed" && fund.points_goal) {
+        const row = await env.DB.prepare(
+          "SELECT COALESCE(SUM(amount),0) t FROM point_gifts WHERE fund_id=?"
+        ).bind(fundId).first<{ t: number }>();
+        if ((row?.t ?? 0) >= fund.points_goal) {
+          const pl = await env.DB.prepare(
+            "SELECT pledge_goal, COALESCE((SELECT SUM(amount_usd) FROM pledges WHERE fund_id=?),0) pledged FROM funds WHERE id=?"
+          ).bind(fundId, fundId).first<{ pledge_goal: number | null; pledged: number }>();
+          if ((pl?.pledged ?? 0) >= (pl?.pledge_goal ?? 0))
+            await env.DB.prepare("UPDATE funds SET status='active' WHERE id=?").bind(fundId).run();
+        }
+      }
+      return json({ ok: true, balance: balance - amt });
+    }
+
+    // ---- project / fund lifecycle (sig-verified creates) ----
+    if (url.pathname === "/projects" && req.method === "POST") {
+      const { slug, name, description, goal, wallet, ts, signature } = (await req.json()) as {
+        slug?: string; name?: string; description?: string; goal?: number;
+        wallet?: string; ts?: number; signature?: string;
+      };
+      const clean = (slug ?? "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80);
+      if (!clean || !name || !wallet || !signature || ts == null)
+        return json({ error: "slug, name, wallet, ts, signature required" }, { status: 400 });
+      const exists = await env.DB.prepare("SELECT 1 FROM claims WHERE project=?").bind(clean).first();
+      if (exists) return json({ error: "slug taken" }, { status: 409 });
+      const v = await verifySig(
+        wallet,
+        `Commons create project\nSlug: ${clean}\nWallet: ${wallet.toLowerCase()}\nTs: ${ts}`,
+        signature,
+        ts,
+      );
+      if (!v.ok) return json({ error: v.error }, { status: 401 });
+      await env.DB.prepare(
+        "INSERT INTO claims(project,name,description,status,created_by,goal) VALUES(?,?,?,'unclaimed',?,?)"
+      ).bind(clean, name, description ?? null, wallet.toLowerCase(), goal ?? null).run();
+      const s = await currentSeason(env.DB);
+      await award(env.DB, wallet, POINT_RULES.createProject, "createProject", clean, s.id);
+      return json({ ok: true, slug: clean });
+    }
+
+    if (url.pathname === "/funds/propose" && req.method === "POST") {
+      const { id, name, description, mechanism, mechParam, pledgeGoal, pointsGoal, wallet, ts, signature } =
+        (await req.json()) as {
+          id?: string; name?: string; description?: string; mechanism?: string;
+          mechParam?: unknown; pledgeGoal?: number; pointsGoal?: number;
+          wallet?: string; ts?: number; signature?: string;
+        };
+      const clean = (id ?? "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80);
+      const mech = mechanism === "match" || mechanism === "multiplier" ? mechanism : "qf";
+      if (!clean || !name || !wallet || !signature || ts == null)
+        return json({ error: "id, name, wallet, ts, signature required" }, { status: 400 });
+      const exists = await env.DB.prepare("SELECT 1 FROM funds WHERE id=?").bind(clean).first();
+      if (exists) return json({ error: "fund id taken" }, { status: 409 });
+      const balance = await pointsBalance(env.DB, wallet);
+      if (balance < PROPOSE_MIN_POINTS)
+        return json({ error: `requires ${PROPOSE_MIN_POINTS} points`, balance }, { status: 403 });
+      const v = await verifySig(
+        wallet,
+        `Commons propose fund\nFund: ${clean}\nWallet: ${wallet.toLowerCase()}\nTs: ${ts}`,
+        signature,
+        ts,
+      );
+      if (!v.ok) return json({ error: v.error }, { status: 401 });
+      await env.DB.prepare(
+        `INSERT INTO funds(id,name,description,mechanism,mech_param,status,pledge_goal,points_goal,created_by,projects)
+         VALUES(?,?,?,?,?,'proposed',?,?,?,'[]')`
+      ).bind(
+        clean, name, description ?? null, mech,
+        mechParam != null ? JSON.stringify(mechParam) : null,
+        pledgeGoal ?? 1000, pointsGoal ?? 1000, wallet.toLowerCase()
+      ).run();
+      const s = await currentSeason(env.DB);
+      await award(env.DB, wallet, POINT_RULES.proposeFund, "proposeFund", clean, s.id);
+      return json({ ok: true, id: clean });
+    }
+
+    if (url.pathname === "/pledges" && req.method === "POST") {
+      const { wallet, fundId, project, amountUsd, note, ts, signature } = (await req.json()) as {
+        wallet?: string; fundId?: string; project?: string;
+        amountUsd?: number; note?: string; ts?: number; signature?: string;
+      };
+      if (!wallet || !signature || ts == null || (!fundId && !project))
+        return json({ error: "wallet, fundId|project, amountUsd, ts, signature required" }, { status: 400 });
+      const usd = Number(amountUsd);
+      if (!isFinite(usd) || usd <= 0 || usd > 1_000_000)
+        return json({ error: "invalid amountUsd" }, { status: 400 });
+      const target = fundId ? `Fund: ${fundId}` : `Project: ${project}`;
+      const v = await verifySig(
+        wallet,
+        `Commons pledge\n${target}\nAmount USD: ${usd}\nWallet: ${wallet.toLowerCase()}\nTs: ${ts}`,
+        signature,
+        ts,
+      );
+      if (!v.ok) return json({ error: v.error }, { status: 401 });
+      await env.DB.prepare(
+        "INSERT INTO pledges(wallet,fund_id,project,amount_usd,note) VALUES(?,?,?,?,?)"
+      ).bind(wallet.toLowerCase(), fundId ?? null, project ?? null, usd, note ?? null).run();
+      const s = await currentSeason(env.DB);
+      await award(env.DB, wallet, Math.round(usd * POINT_RULES.perPledgedUsd), "pledge", fundId ?? project, s.id);
+      // proposed funds activate once their pledge + points goals are met
+      if (fundId) {
+        const f = await env.DB.prepare(
+          "SELECT status, pledge_goal, points_goal, COALESCE((SELECT SUM(amount_usd) FROM pledges WHERE fund_id=?),0) pledged, COALESCE((SELECT SUM(amount) FROM point_gifts WHERE fund_id=?),0) pts FROM funds WHERE id=?"
+        ).bind(fundId, fundId, fundId).first<any>();
+        if (f?.status === "proposed" && f.pledged >= (f.pledge_goal ?? 0) && f.pts >= (f.points_goal ?? 0))
+          await env.DB.prepare("UPDATE funds SET status='active' WHERE id=?").bind(fundId).run();
+      }
+      return json({ ok: true });
+    }
+
+    // ---- detail reads ----
+    if (url.pathname.startsWith("/funds/") && req.method === "GET") {
+      const id = decodeURIComponent(url.pathname.split("/")[2] ?? "");
+      const fund = await env.DB.prepare("SELECT * FROM funds WHERE id=?").bind(id).first<any>();
+      if (!fund) return json({ error: "not found" }, { status: 404 });
+      let slugs: string[] = [];
+      try { slugs = JSON.parse(fund.projects ?? "[]"); } catch {}
+      const placeholders = slugs.map(() => "?").join(",");
+      const projects = slugs.length
+        ? (await env.DB.prepare(
+            `SELECT c.project, c.name, c.description, c.status, c.royalty_bps,
+                    (SELECT COUNT(*) FROM artifacts a WHERE a.project=c.project) artifacts
+             FROM claims c WHERE c.project IN (${placeholders})`
+          ).bind(...slugs).all()).results
+        : [];
+      const s = await currentSeason(env.DB);
+      const [pts, pledged] = await Promise.all([
+        env.DB.prepare("SELECT COALESCE(SUM(amount),0) t FROM point_gifts WHERE fund_id=? AND season=?")
+          .bind(id, s.id).first<{ t: number }>(),
+        env.DB.prepare("SELECT COALESCE(SUM(amount_usd),0) t FROM pledges WHERE fund_id=?")
+          .bind(id).first<{ t: number }>(),
+      ]);
+      const totalPts = await env.DB.prepare(
+        "SELECT COALESCE(SUM(amount),0) t FROM point_gifts WHERE season=?"
+      ).bind(s.id).first<{ t: number }>();
+      // match preview: mechanism over member projects using pledges as contributions
+      const mech: Mechanism =
+        fund.mechanism === "match"
+          ? { type: "match", cap: JSON.parse(fund.mech_param ?? "{}").cap ?? 100 }
+          : fund.mechanism === "multiplier"
+            ? { type: "multiplier", x: JSON.parse(fund.mech_param ?? "{}").x ?? 2 }
+            : { type: "qf" };
+      const { results: contribs } = await env.DB.prepare(
+        `SELECT project AS projectId, wallet AS donor, amount_usd AS amount FROM pledges WHERE project IN (${placeholders || "''"})`
+      ).bind(...slugs).all();
+      const seasonPts = pts?.t ?? 0;
+      const pool = totalPts?.t ? (seasonPts / totalPts.t) * 1000 : 0; // share of notional season pool ($1000 until Pot live)
+      const preview = computeMatches(mech, pool, slugs, contribs as any[]);
+      return json({ ...fund, memberProjects: projects, seasonPoints: seasonPts, pledged: pledged?.t ?? 0, season: s.id, matchPreview: preview });
+    }
+
+    if (url.pathname.startsWith("/projects/") && req.method === "GET") {
+      const slug = decodeURIComponent(url.pathname.split("/")[2] ?? "");
+      const claim = await env.DB.prepare("SELECT * FROM claims WHERE project=?").bind(slug).first<any>();
+      if (!claim) return json({ error: "not found" }, { status: 404 });
+      const { results: arts } = await env.DB.prepare(
+        "SELECT token_id, total_supply FROM artifacts WHERE project=?"
+      ).bind(slug).all();
+      const { results: funds } = await env.DB.prepare("SELECT id, name, projects FROM funds").all();
+      const memberships = (funds as any[]).filter((f) => {
+        try { return (JSON.parse(f.projects ?? "[]") as string[]).includes(slug); } catch { return false; }
+      }).map((f) => ({ id: f.id, name: f.name }));
+      const pledged = await env.DB.prepare(
+        "SELECT COALESCE(SUM(amount_usd),0) t FROM pledges WHERE project=?"
+      ).bind(slug).first<{ t: number }>();
+      return json({ ...claim, artifacts: arts, funds: memberships, pledged: pledged?.t ?? 0 });
+    }
+
 
     if (url.pathname === "/royalty-map") {
       const { results } = await env.DB.prepare(

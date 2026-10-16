@@ -15,6 +15,7 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { NextPage } from 'next'
+import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import { useAccount, useContractRead, useContractWrite } from 'wagmi'
 import Head from '../components/Head'
@@ -29,6 +30,7 @@ const POT_ABI = [
 ] as const
 
 const PotPage: NextPage = () => {
+  const { t } = useTranslation('templates')
   const { address } = useAccount()
   const env = useEnvironment()
   const pot = process.env.NEXT_PUBLIC_POT_ADDRESS as `0x${string}` | undefined
@@ -70,9 +72,15 @@ const PotPage: NextPage = () => {
         <Heading as="h1" size="xl" mb={2}>
           The Pot
         </Heading>
-        <Text color="gray.500">
+        <Text color="gray.500" maxW="2xl">
           Hold-or-exit endowment. Marketplace and pool fees grow every share;
           redeem to exit and burn.
+        </Text>
+        <Text color="gray.600" fontSize="sm" mt={3} maxW="2xl">
+          {t('pot.wealth')}
+        </Text>
+        <Text color="gray.500" fontSize="xs" mt={2} maxW="2xl">
+          {t('pot.endowNote', { points: '100' })}
         </Text>
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={8}>

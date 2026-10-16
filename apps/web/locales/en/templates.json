@@ -88,14 +88,20 @@
       "empty": {
         "title": "No projects",
         "description": "No artifact-linked projects yet."
-      }
+      },
+      "start": "Start a project"
     },
     "funds": {
       "projects": "{{count}} projects",
       "empty": {
         "title": "No funds",
         "description": "No active funds yet."
-      }
+      },
+      "tabs": {
+        "active": "Active",
+        "proposed": "Proposed"
+      },
+      "propose": "Propose a fund"
     }
   },
   "drops": {
@@ -455,5 +461,265 @@
         "updated": "Your profile has been successfully updated."
       }
     }
+  },
+  "landing": {
+    "title": "About Commons",
+    "hero": {
+      "pill": "Open-source public-goods marketplace",
+      "title1": "Collect art.",
+      "title2": "Fund the commons.",
+      "desc": "Every artifact sale routes a share to the project behind it and feeds a community endowment. Built entirely on open protocols — sudoswap pools, an ERC-4626 endowment, and quadratic-style matching.",
+      "ctaMain": "Explore artifacts",
+      "ctaSec": "How it works",
+      "stat1": "Artifacts",
+      "stat2": "Projects",
+      "stat3": "Funds"
+    },
+    "pillars": {
+      "pill": "The protocol",
+      "title": "What is Commons?",
+      "desc": "A marketplace where culture funds the commons: sales carry protocol fees and per-project royalties into a yield-bearing endowment that matches community funding.",
+      "1": {
+        "tag": "Pillar 1 · Marketplace",
+        "title": "An open NFT marketplace",
+        "desc": "ERC-721 and ERC-1155 traded through liquidity pools and direct listings. No custody, no platform lock-in — the whole stack is open source."
+      },
+      "2": {
+        "tag": "Pillar 2 · The Pot",
+        "title": "A permanent endowment",
+        "desc": "Fees and yield accrue to the Pot — an ERC-4626 vault with hold-or-exit semantics. Hold shares to compound, redeem to exit. Principal works forever."
+      },
+      "3": {
+        "tag": "Pillar 3 · Funding",
+        "title": "Sales fund projects",
+        "desc": "Each project sets a configurable share of its artifact sales (capped at 5%), escrowed by the Pot until the project claims it with its treasury wallet."
+      }
+    },
+    "genesis": {
+      "pill": "Genesis collection",
+      "title": "Artizen Artifacts: the genesis round",
+      "desc": "The projects Artizen left behind get a permanent home here. Each artifact is linked to its project — buying one directly supports it.",
+      "featTag": "Community-matched funding",
+      "featTitle": "Why collecting early matters",
+      "featDesc": "Artifact sales are the engine of the protocol: they pay creators, grow the endowment, and decide where matching lands. Every purchase is a vote with weight.",
+      "li1": "176 artifacts linked to real Artizen projects and funds.",
+      "li2": "Per-project royalty configurable up to 5%, escrowed until claimed.",
+      "li3": "Protocol fees feed the Pot endowment and matching pool.",
+      "c1title": "Buy to support",
+      "c1desc": "Pick a project or fund, filter the artifact grid, and buy — a configurable share goes straight to that project.",
+      "c1foot": "Direct support, on-chain",
+      "c2title": "Claim and verify",
+      "c2desc": "Project owners claim their slug with a signature, set their royalty, and start receiving escrowed proceeds.",
+      "c2foot": "Signature-verified claims",
+      "c3title": "Steer the commons",
+      "c3desc": "Points earned by participating allocate the season’s matching across funds — the community directs the endowment’s yield.",
+      "c3foot": "Allocation by participation"
+    },
+    "flow": {
+      "title": "How a sale flows",
+      "desc": "Every artifact purchase splits its price across the protocol automatically.",
+      "s1title": "Artifact sells",
+      "s1desc": "A buyer purchases through a liquidity pool or listing at the quoted price.",
+      "s2title": "Sale splits",
+      "s2desc": "Seller proceeds, a project royalty (up to 5%), and a 0.5% protocol fee are computed at checkout.",
+      "s3title": "Pot accrues",
+      "s3desc": "Fees and unclaimed royalties accrue to the Pot endowment, compounding into matching power.",
+      "s4title": "Projects funded",
+      "s4desc": "Claimed projects receive their royalty share; the Pot’s yield matches community funding each season."
+    },
+    "pf": {
+      "pill": "Discover",
+      "title": "Projects and funds",
+      "desc": "Browse the Artizen archive — every project and fund carries its real history, members, and artifacts.",
+      "ptag": "Projects",
+      "ptitle": "3,375 archived projects",
+      "pdesc": "Each with its own page: description, claimable treasury, configurable sale share, and its artifacts.",
+      "pcta": "Browse projects",
+      "ftag": "Funds",
+      "ftitle": "258 matching funds",
+      "fdesc": "Curated pools of projects. Back them with points to steer the season’s matching toward what matters.",
+      "fcta": "Browse funds"
+    },
+    "sim": {
+      "pill": "Calculator",
+      "title": "What does a sale do?",
+      "desc": "Pick a project and a price — see exactly where the money goes and what repeat support adds up to.",
+      "project": "Project",
+      "price": "Artifact price (USD)",
+      "sales": "Sales per month: {{count}}",
+      "note": "This project takes {{pct}}% of each sale — escrowed by the Pot until claimed.",
+      "resultTitle": "Monthly support",
+      "toProject": "per month to {{project}}",
+      "royaltyPerSale": "Project royalty per sale ({{pct}}%)",
+      "potPerSale": "Protocol fee to the Pot (0.5%)",
+      "sellerGets": "Seller proceeds per sale",
+      "potMonthly": "Pot inflow per month"
+    },
+    "docs": {
+      "pill": "Open source",
+      "title": "Documents",
+      "readme": "Protocol overview and architecture",
+      "oss": "Every upstream dependency and its license",
+      "licenses": "License inventory for the stack",
+      "contracts": "Solidity source: pools, Pot, royalty engine"
+    },
+    "faq": {
+      "title": "Questions",
+      "q1": "What is Commons?",
+      "a1": "An open-source marketplace and funding protocol. Artifact sales pay creators, feed an endowment, and match community funding — all on open protocols.",
+      "q2": "How do artifact sales fund projects?",
+      "a2": "Each artifact is linked to a project. A configurable share (up to 5%) of every sale goes to that project — escrowed by the Pot until they claim it.",
+      "q3": "What is the Pot?",
+      "a3": "An ERC-4626 endowment vault. Hold shares to compound or redeem to exit — hold-or-exit semantics. Fees and yield accrue inside, funding matching forever.",
+      "q4": "I was on Artizen. How do I claim my project?",
+      "a4": "Open your project page, connect the treasury wallet, sign the claim, and set your royalty. Escrowed proceeds start routing to you immediately.",
+      "q5": "What are points for?",
+      "a5": "Points are earned by participating — pledging, endowing, claiming, proposing. You allocate them to funds; a fund’s share of points is its share of the season’s matching.",
+      "q6": "Which chains?",
+      "a6": "Artifacts live on Ethereum mainnet today; pools and the Pot deploy to Base Sepolia first, then Base. Mirrored artifacts are planned."
+    },
+    "cta": {
+      "title": "Start collecting. Start funding.",
+      "desc": "Every artifact is a real project’s funding channel.",
+      "explore": "Explore artifacts",
+      "claim": "Claim your project"
+    }
+  },
+  "how": {
+    "title": "How Commons works",
+    "sub": "Holding the endowment pays for matching. Members decide where it goes.",
+    "mechanisms": "Three ways to match",
+    "mech": {
+      "qf": {
+        "name": "Quadratic funding",
+        "explain": "The pool is split by how many people back a project, not how much any one person gives. Ten people giving $5 unlock far more than one giving $50."
+      },
+      "match": {
+        "name": "1:1 match with cap",
+        "explain": "Every contribution is matched one-for-one, up to a cap per donor per project. If demand exceeds the pool, everything is scaled down evenly."
+      },
+      "multiplier": {
+        "name": "Fixed multiplier",
+        "explain": "Each contribution unlocks a fixed multiple from the pool. If demand exceeds the pool, everything is scaled down evenly."
+      }
+    },
+    "sandbox": {
+      "title": "Try the matching engine",
+      "pool": "Pool $",
+      "contributions": "Contributions",
+      "allocation": "Allocation",
+      "coverage": "Pool coverage"
+    },
+    "questions": "Questions",
+    "faq": {
+      "q1": "Where does the matching money come from?",
+      "a1": "The Pot: an ERC-4626 endowment fed by protocol fees, unclaimed royalties, and deposits. Its yield is each season’s matching pool. Principal is never spent.",
+      "q2": "What are points for?",
+      "a2": "You give them to funds each season. A fund with 30% of the points gets 30% of the yield. Earn 1,000 to propose a fund.",
+      "q3": "Is there a fee?",
+      "a3": "0.5% of every artifact sale goes to the Pot forever, plus a per-project royalty of up to 5% configurable by the project.",
+      "q4": "What does endowing mean?",
+      "a4": "Depositing into the Pot. It earns yield for matching forever, and you earn 100 points per $1 to steer it.",
+      "q5": "How do projects get artifacts?",
+      "a5": "Artifacts mint on the marketplace and link to a project. Sales then carry that project’s royalty automatically.",
+      "q6": "I was on Artizen. What happens to my project?",
+      "a6": "It’s already here. Claim your project, set your royalty, and escrowed proceeds route to your treasury wallet. You also earn 1,000 alumni points.",
+      "q7": "How do funds launch?",
+      "a7": "A proposed fund activates once it hits both its pledge goal and its points-backing goal — proving demand before matching flows.",
+      "q8": "Is any of this real?",
+      "a8": "Yes — the data is the real Artizen archive, points and pledges are wallet-signed and server-persisted. On-chain settlement activates when the Pot and pools deploy."
+    },
+    "ctaFunds": "See the funds",
+    "ctaClaim": "Claim your project"
+  },
+  "project": {
+    "notFound": "Project not found",
+    "royalty": "{{pct}}% of each artifact sale supports this project",
+    "ofGoal": "of ${{goal}} goal",
+    "claim": "Claim this project",
+    "pledgeLabel": "Pledge support (USD)",
+    "pledge": "Pledge",
+    "pledged": "Pledged ${{amount}} — thank you!",
+    "pledgeError": "Pledge failed",
+    "pledgeNote": "A pledge is a signed intent, not a charge. It converts when settlement goes live.",
+    "artifacts": "Artifacts ({{count}})",
+    "noArtifacts": "No artifacts linked to this project yet."
+  },
+  "fund": {
+    "notFound": "Fund not found",
+    "proposed": "Proposed",
+    "artizen": "Artizen fund",
+    "memberProjects": "projects",
+    "pledged": "pledged",
+    "seasonPoints": "points this season",
+    "givePoints": "Give points",
+    "yourBalance": "balance: {{balance}}",
+    "gavePoints": "+{{amount}} points allocated",
+    "giveError": "Couldn’t allocate points",
+    "projects": "Member projects ({{count}})"
+  },
+  "points": {
+    "title": "Points",
+    "sub": "Season {{season}} · {{days}} days left — your points steer where this season’s matching goes.",
+    "balance": "your balance",
+    "connect": "Connect a wallet to see your points.",
+    "allocate": "Allocate to funds",
+    "how": "How to earn",
+    "rules": {
+      "welcome": "First action",
+      "perPledgedUsd": "Per $1 pledged",
+      "perEndowedUsd": "Per $1 endowed to the Pot",
+      "createProject": "Create a project",
+      "artizenAlumni": "Claim an Artizen project",
+      "proposeFund": "Propose a fund"
+    },
+    "history": "History",
+    "empty": "No points yet — pledge, claim, or propose to start earning.",
+    "col": {
+      "reason": "Action",
+      "ref": "Reference",
+      "points": "Points",
+      "date": "Date"
+    }
+  },
+  "allocate": {
+    "title": "Allocate points",
+    "sub": "Season {{season}} · {{days}} days left — points given this season set each fund’s share of the matching pool.",
+    "gave": "+{{amount}} points allocated",
+    "error": "Allocation failed",
+    "seasonPts": "pts this season",
+    "ofPool": "of pool",
+    "mine": "from you",
+    "toLaunch": "points to launch",
+    "proposed": "Proposed funds",
+    "proposedDesc": "Proposed funds launch once they hit their pledge and points goals."
+  },
+  "new": {
+    "title": "Start a project",
+    "desc": "Create a project page. It becomes claimable immediately — link artifacts later and set your sale share.",
+    "slug": "Slug",
+    "name": "Project name",
+    "description": "Description",
+    "goal": "Funding goal (USD, optional)",
+    "submit": "Create project",
+    "created": "Project created",
+    "error": "Couldn’t create project"
+  },
+  "propose": {
+    "title": "Propose a fund",
+    "desc": "Proposing a fund requires {{points}} points. It launches when it reaches both its pledge goal and its points-backing goal.",
+    "mechanism": "Matching mechanism",
+    "cap": "Match cap per donor ($)",
+    "multiplier": "Multiplier (×)",
+    "pledgeGoal": "Pledge goal ($)",
+    "pointsGoal": "Points-backing goal",
+    "gated": "Needs {{points}} points — you have {{balance}}.",
+    "submit": "Propose fund",
+    "created": "Fund proposed",
+    "error": "Couldn’t propose fund"
+  },
+  "pot": {
+    "wealth": "The Pot is the protocol’s endowment: every deposit is permanent matching power. Its yield — not its principal — is spent each season, split across funds by member points.",
+    "endowNote": "Endowing earns {{points}} points per $1 — points steer the season’s allocation on the Allocate page."
   }
 }

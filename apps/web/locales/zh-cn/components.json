@@ -509,7 +509,9 @@
       "edit": "编辑个人资料",
       "top-up": "充值",
       "sign-out": "退出"
-    }
+    },
+    "about": "关于",
+    "points": "积分"
   },
   "network-selection": {
     "title": "网络错误",

@@ -88,14 +88,20 @@
       "empty": {
         "title": "Sin proyectos",
         "description": "Aún no hay proyectos con artefactos."
-      }
+      },
+      "start": "Crear proyecto"
     },
     "funds": {
       "projects": "{{count}} proyectos",
       "empty": {
         "title": "Sin fondos",
         "description": "Aún no hay fondos activos."
-      }
+      },
+      "tabs": {
+        "active": "Activos",
+        "proposed": "Propuestos"
+      },
+      "propose": "Proponer fondo"
     }
   },
   "drops": {
@@ -455,5 +461,265 @@
         "updated": "Tu perfil ha sido actualizado."
       }
     }
+  },
+  "landing": {
+    "title": "Acerca de Commons",
+    "hero": {
+      "pill": "Mercado de bienes comunes de código abierto",
+      "title1": "Colecciona arte.",
+      "title2": "Financia los bienes comunes.",
+      "desc": "Cada venta de artefacto dirige una parte al proyecto detrás de él y alimenta un fondo comunitario. Construido sobre protocolos abiertos: pools de liquidez, un endowment ERC-4626 y matching cuadrático.",
+      "ctaMain": "Explorar artefactos",
+      "ctaSec": "Cómo funciona",
+      "stat1": "Artefactos",
+      "stat2": "Proyectos",
+      "stat3": "Fondos"
+    },
+    "pillars": {
+      "pill": "El protocolo",
+      "title": "¿Qué es Commons?",
+      "desc": "Un mercado donde la cultura financia los bienes comunes: las ventas llevan comisiones de protocolo y regalías por proyecto a un endowment que multiplica el financiamiento comunitario.",
+      "1": {
+        "tag": "Pilar 1 · Mercado",
+        "title": "Un mercado NFT abierto",
+        "desc": "ERC-721 y ERC-1155 comerciados con pools de liquidez y listados directos. Sin custodia, sin bloqueo de plataforma: todo el stack es código abierto."
+      },
+      "2": {
+        "tag": "Pilar 2 · El Pot",
+        "title": "Un endowment permanente",
+        "desc": "Las comisiones y el rendimiento se acumulan en el Pot: una bóveda ERC-4626 de mantener-o-salir. Mantén participaciones para capitalizar, redime para salir."
+      },
+      "3": {
+        "tag": "Pilar 3 · Financiamiento",
+        "title": "Las ventas financian proyectos",
+        "desc": "Cada proyecto configura una parte de sus ventas (hasta 5%), en custodia del Pot hasta que el proyecto la reclame con su billetera de tesorería."
+      }
+    },
+    "genesis": {
+      "pill": "Colección génesis",
+      "title": "Artizen Artifacts: la ronda génesis",
+      "desc": "Los proyectos que Artizen dejó tienen un hogar permanente aquí. Cada artefacto está vinculado a su proyecto: comprarlo lo apoya directamente.",
+      "featTag": "Financiamiento con matching comunitario",
+      "featTitle": "Por qué importa coleccionar temprano",
+      "featDesc": "Las ventas de artefactos son el motor del protocolo: pagan a creadores, hacen crecer el endowment y deciden dónde cae el matching. Cada compra es un voto con peso.",
+      "li1": "176 artefactos vinculados a proyectos y fondos reales de Artizen.",
+      "li2": "Regalía por proyecto configurable hasta 5%, en custodia hasta reclamar.",
+      "li3": "Las comisiones del protocolo alimentan el Pot y el pool de matching.",
+      "c1title": "Compra para apoyar",
+      "c1desc": "Elige un proyecto o fondo, filtra la cuadrícula de artefactos y compra: una parte configurable va directo al proyecto.",
+      "c1foot": "Apoyo directo, on-chain",
+      "c2title": "Reclama y verifica",
+      "c2desc": "Los dueños de proyectos reclaman su slug con una firma, configuran su regalía y empiezan a recibir lo acumulado en custodia.",
+      "c2foot": "Reclamos verificados por firma",
+      "c3title": "Dirige los bienes comunes",
+      "c3desc": "Los puntos ganados por participar asignan el matching de la temporada entre fondos: la comunidad dirige el rendimiento del endowment.",
+      "c3foot": "Asignación por participación"
+    },
+    "flow": {
+      "title": "Cómo fluye una venta",
+      "desc": "Cada compra de artefacto divide su precio por el protocolo automáticamente.",
+      "s1title": "Se vende un artefacto",
+      "s1desc": "Un comprador adquiere a través de un pool de liquidez o un listado al precio cotizado.",
+      "s2title": "La venta se divide",
+      "s2desc": "Ganancias del vendedor, regalía del proyecto (hasta 5%) y 0.5% de comisión del protocolo se calculan en el checkout.",
+      "s3title": "El Pot crece",
+      "s3desc": "Comisiones y regalías no reclamadas se acumulan en el Pot, capitalizando poder de matching.",
+      "s4title": "Proyectos financiados",
+      "s4desc": "Los proyectos reclamados reciben su regalía; el rendimiento del Pot iguala el financiamiento comunitario cada temporada."
+    },
+    "pf": {
+      "pill": "Descubre",
+      "title": "Proyectos y fondos",
+      "desc": "Explora el archivo de Artizen: cada proyecto y fondo conserva su historia real, miembros y artefactos.",
+      "ptag": "Proyectos",
+      "ptitle": "3,375 proyectos archivados",
+      "pdesc": "Cada uno con su página: descripción, tesorería reclamable, parte de ventas configurable y sus artefactos.",
+      "pcta": "Ver proyectos",
+      "ftag": "Fondos",
+      "ftitle": "258 fondos de matching",
+      "fdesc": "Pools curados de proyectos. Respaládalos con puntos para dirigir el matching de la temporada.",
+      "fcta": "Ver fondos"
+    },
+    "sim": {
+      "pill": "Calculadora",
+      "title": "¿Qué hace una venta?",
+      "desc": "Elige un proyecto y un precio: mira exactamente a dónde va el dinero y cuánto suma el apoyo repetido.",
+      "project": "Proyecto",
+      "price": "Precio del artefacto (USD)",
+      "sales": "Ventas por mes: {{count}}",
+      "note": "Este proyecto recibe {{pct}}% de cada venta — en custodia del Pot hasta que lo reclame.",
+      "resultTitle": "Apoyo mensual",
+      "toProject": "por mes a {{project}}",
+      "royaltyPerSale": "Regalía del proyecto por venta ({{pct}}%)",
+      "potPerSale": "Comisión del protocolo al Pot (0.5%)",
+      "sellerGets": "Ganancias del vendedor por venta",
+      "potMonthly": "Flujo al Pot por mes"
+    },
+    "docs": {
+      "pill": "Código abierto",
+      "title": "Documentos",
+      "readme": "Visión general del protocolo y arquitectura",
+      "oss": "Cada dependencia y su licencia",
+      "licenses": "Inventario de licencias del stack",
+      "contracts": "Fuente Solidity: pools, Pot, motor de regalías"
+    },
+    "faq": {
+      "title": "Preguntas",
+      "q1": "¿Qué es Commons?",
+      "a1": "Un mercado de código abierto y protocolo de financiamiento. Las ventas de artefactos pagan a creadores, alimentan un endowment e igualan el financiamiento comunitario.",
+      "q2": "¿Cómo financian las ventas a los proyectos?",
+      "a2": "Cada artefacto está vinculado a un proyecto. Una parte configurable (hasta 5%) de cada venta va a ese proyecto, en custodia del Pot hasta que lo reclame.",
+      "q3": "¿Qué es el Pot?",
+      "a3": "Una bóveda endowment ERC-4626. Mantén participaciones para capitalizar o redime para salir. Comisiones y rendimiento se acumulan dentro, financiando matching para siempre.",
+      "q4": "Estuve en Artizen. ¿Cómo reclamo mi proyecto?",
+      "a4": "Abre tu página de proyecto, conecta la billetera de tesorería, firma el reclamo y configura tu regalía. Lo acumulado empieza a llegar de inmediato.",
+      "q5": "¿Para qué sirven los puntos?",
+      "a5": "Se ganan participando: promesas, endowments, reclamos, propuestas. Los asignas a fondos; la parte de puntos de un fondo es su parte del matching de la temporada.",
+      "q6": "¿Qué cadenas?",
+      "a6": "Los artefactos viven en Ethereum mainnet hoy; pools y el Pot se despliegan primero en Base Sepolia, luego Base. Artefactos espejo están planeados."
+    },
+    "cta": {
+      "title": "Empieza a coleccionar. Empieza a financiar.",
+      "desc": "Cada artefacto es un canal de financiamiento real de un proyecto.",
+      "explore": "Explorar artefactos",
+      "claim": "Reclama tu proyecto"
+    }
+  },
+  "how": {
+    "title": "Cómo funciona Commons",
+    "sub": "Mantener el endowment paga el matching. Los miembros deciden a dónde va.",
+    "mechanisms": "Tres formas de matching",
+    "mech": {
+      "qf": {
+        "name": "Financiamiento cuadrático",
+        "explain": "El pool se divide por cuántas personas apoyan un proyecto, no por cuánto da cada una. Diez personas dando $5 desbloquean mucho más que una dando $50."
+      },
+      "match": {
+        "name": "Match 1:1 con tope",
+        "explain": "Cada contribución se iguala uno a uno, hasta un tope por donante por proyecto. Si la demanda excede el pool, todo se escala parejo."
+      },
+      "multiplier": {
+        "name": "Multiplicador fijo",
+        "explain": "Cada contribución desbloquea un múltiplo fijo del pool. Si la demanda excede el pool, todo se escala parejo."
+      }
+    },
+    "sandbox": {
+      "title": "Prueba el motor de matching",
+      "pool": "Pool $",
+      "contributions": "Contribuciones",
+      "allocation": "Asignación",
+      "coverage": "Cobertura del pool"
+    },
+    "questions": "Preguntas",
+    "faq": {
+      "q1": "¿De dónde sale el dinero del matching?",
+      "a1": "Del Pot: un endowment ERC-4626 alimentado por comisiones, regalías no reclamadas y depósitos. Su rendimiento es el pool de matching de cada temporada. El principal nunca se gasta.",
+      "q2": "¿Para qué sirven los puntos?",
+      "a2": "Los das a fondos cada temporada. Un fondo con 30% de los puntos recibe 30% del rendimiento. Junta 1,000 para proponer un fondo.",
+      "q3": "¿Hay comisión?",
+      "a3": "0.5% de cada venta va al Pot para siempre, más una regalía por proyecto de hasta 5% configurable.",
+      "q4": "¿Qué significa endosar (endow)?",
+      "a4": "Depositar en el Pot. Genera rendimiento para matching para siempre, y ganas 100 puntos por cada $1 para dirigirlo.",
+      "q5": "¿Cómo obtienen artefactos los proyectos?",
+      "a5": "Los artefactos se acuñan en el mercado y se vinculan a un proyecto. Las ventas llevan la regalía de ese proyecto automáticamente.",
+      "q6": "Estuve en Artizen. ¿Qué pasa con mi proyecto?",
+      "a6": "Ya está aquí. Reclámalo, configura tu regalía y lo acumulado va a tu billetera de tesorería. También ganas 1,000 puntos de alumni.",
+      "q7": "¿Cómo se lanzan los fondos?",
+      "a7": "Un fondo propuesto se activa al alcanzar su meta de promesas y su meta de puntos: prueba demanda antes de que fluya el matching.",
+      "q8": "¿Esto es real?",
+      "a8": "Sí: los datos son el archivo real de Artizen; puntos y promesas son firmados por billetera y persistidos en servidor. La liquidación on-chain se activa al desplegar Pot y pools."
+    },
+    "ctaFunds": "Ver los fondos",
+    "ctaClaim": "Reclama tu proyecto"
+  },
+  "project": {
+    "notFound": "Proyecto no encontrado",
+    "royalty": "{{pct}}% de cada venta de artefacto apoya a este proyecto",
+    "ofGoal": "de la meta de ${{goal}}",
+    "claim": "Reclamar este proyecto",
+    "pledgeLabel": "Promesa de apoyo (USD)",
+    "pledge": "Prometer",
+    "pledged": "¡Prometiste ${{amount}} — gracias!",
+    "pledgeError": "La promesa falló",
+    "pledgeNote": "Una promesa es una intención firmada, no un cargo. Se convierte cuando la liquidación se active.",
+    "artifacts": "Artefactos ({{count}})",
+    "noArtifacts": "Aún no hay artefactos vinculados a este proyecto."
+  },
+  "fund": {
+    "notFound": "Fondo no encontrado",
+    "proposed": "Propuesto",
+    "artizen": "Fondo Artizen",
+    "memberProjects": "proyectos",
+    "pledged": "prometido",
+    "seasonPoints": "puntos esta temporada",
+    "givePoints": "Dar puntos",
+    "yourBalance": "saldo: {{balance}}",
+    "gavePoints": "+{{amount}} puntos asignados",
+    "giveError": "No se pudieron asignar puntos",
+    "projects": "Proyectos miembros ({{count}})"
+  },
+  "points": {
+    "title": "Puntos",
+    "sub": "Temporada {{season}} · quedan {{days}} días — tus puntos dirigen el matching de esta temporada.",
+    "balance": "tu saldo",
+    "connect": "Conecta una billetera para ver tus puntos.",
+    "allocate": "Asignar a fondos",
+    "how": "Cómo ganar",
+    "rules": {
+      "welcome": "Primera acción",
+      "perPledgedUsd": "Por cada $1 prometido",
+      "perEndowedUsd": "Por cada $1 endosado al Pot",
+      "createProject": "Crear un proyecto",
+      "artizenAlumni": "Reclamar un proyecto Artizen",
+      "proposeFund": "Proponer un fondo"
+    },
+    "history": "Historial",
+    "empty": "Aún no hay puntos: promete, reclama o propone para empezar.",
+    "col": {
+      "reason": "Acción",
+      "ref": "Referencia",
+      "points": "Puntos",
+      "date": "Fecha"
+    }
+  },
+  "allocate": {
+    "title": "Asignar puntos",
+    "sub": "Temporada {{season}} · quedan {{days}} días — los puntos dados esta temporada fijan la parte de cada fondo del pool de matching.",
+    "gave": "+{{amount}} puntos asignados",
+    "error": "La asignación falló",
+    "seasonPts": "pts esta temporada",
+    "ofPool": "del pool",
+    "mine": "de ti",
+    "toLaunch": "puntos para lanzar",
+    "proposed": "Fondos propuestos",
+    "proposedDesc": "Los fondos propuestos se lanzan al alcanzar sus metas de promesas y puntos."
+  },
+  "new": {
+    "title": "Crear un proyecto",
+    "desc": "Crea una página de proyecto. Es reclamable de inmediato: vincula artefactos después y configura tu parte de ventas.",
+    "slug": "Slug",
+    "name": "Nombre del proyecto",
+    "description": "Descripción",
+    "goal": "Meta de financiamiento (USD, opcional)",
+    "submit": "Crear proyecto",
+    "created": "Proyecto creado",
+    "error": "No se pudo crear el proyecto"
+  },
+  "propose": {
+    "title": "Proponer un fondo",
+    "desc": "Proponer un fondo requiere {{points}} puntos. Se lanza al alcanzar su meta de promesas y su meta de puntos.",
+    "mechanism": "Mecanismo de matching",
+    "cap": "Tope de match por donante ($)",
+    "multiplier": "Multiplicador (×)",
+    "pledgeGoal": "Meta de promesas ($)",
+    "pointsGoal": "Meta de puntos de respaldo",
+    "gated": "Requiere {{points}} puntos — tienes {{balance}}.",
+    "submit": "Proponer fondo",
+    "created": "Fondo propuesto",
+    "error": "No se pudo proponer el fondo"
+  },
+  "pot": {
+    "wealth": "El Pot es el endowment del protocolo: cada depósito es poder de matching permanente. Su rendimiento — nunca su principal — se gasta cada temporada, dividido entre fondos por puntos de miembros.",
+    "endowNote": "Endosar gana {{points}} puntos por $1 — los puntos dirigen la asignación de la temporada en Asignar."
   }
 }

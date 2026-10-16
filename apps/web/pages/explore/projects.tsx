@@ -1,6 +1,7 @@
 import {
   Badge,
   Box,
+  Button,
   Flex,
   Heading,
   SimpleGrid,
@@ -19,7 +20,6 @@ import SkeletonUserCard from '../../components/Skeleton/UserCard'
 import useQueryParamSingle from '../../hooks/useQueryParamSingle'
 
 const INDEXER = process.env.NEXT_PUBLIC_INDEXER_URL || ''
-const ARTIFACT_COLLECTION = '0x20cddf283164ee59742c80aa5ce9b97127f123ce'
 
 type Claim = {
   project: string
@@ -81,6 +81,11 @@ const ProjectsPage: NextPage = () => {
         selectedTabIndex={3}
       >
         <>
+          <Flex justify="flex-end" mt={4}>
+            <Button as={Link} href="/new" size="sm" colorScheme="brand" rounded="xl">
+              {t('explore.projects.start')}
+            </Button>
+          </Flex>
           {filtered === undefined ? (
             <SkeletonGrid
               items={12}
@@ -103,12 +108,7 @@ const ProjectsPage: NextPage = () => {
               alignItems="stretch"
             >
               {filtered.map((p) => (
-                <Link
-                  key={p.project}
-                  href={`/collection/1/${ARTIFACT_COLLECTION}?traits[Project]=${encodeURIComponent(
-                    p.name ?? p.project,
-                  )}`}
-                >
+                <Link key={p.project} href={`/projects/${p.project}`}>
                   <Box
                     borderWidth="1px"
                     borderRadius="xl"

@@ -36,7 +36,55 @@ CREATE TABLE IF NOT EXISTS funds (
   mechanism TEXT,
   pool TEXT,
   projects TEXT, -- json array
-  description TEXT
+  description TEXT,
+  status TEXT DEFAULT 'active', -- active|proposed
+  mech_param TEXT, -- json: {cap} for match, {x} for multiplier
+  pledge_goal REAL,
+  points_goal INTEGER,
+  created_by TEXT
+);
+
+CREATE TABLE IF NOT EXISTS thumbs (
+  cid TEXT PRIMARY KEY, -- ipfs cid path (no scheme)
+  data BLOB NOT NULL,
+  ctype TEXT NOT NULL DEFAULT 'image/webp'
+);
+
+-- points/allocation system (wallet-bound, signature-verified writes)
+CREATE TABLE IF NOT EXISTS points_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wallet TEXT NOT NULL,
+  delta INTEGER NOT NULL,
+  reason TEXT NOT NULL,
+  ref TEXT,
+  season INTEGER,
+  ts INTEGER DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS point_gifts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wallet TEXT NOT NULL,
+  fund_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  season INTEGER,
+  ts INTEGER DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS seasons (
+  id INTEGER PRIMARY KEY,
+  start_ts INTEGER NOT NULL,
+  end_ts INTEGER NOT NULL
+);
+
+-- signed give-intents until on-chain settlement exists
+CREATE TABLE IF NOT EXISTS pledges (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wallet TEXT NOT NULL,
+  fund_id TEXT,
+  project TEXT,
+  amount_usd REAL NOT NULL,
+  note TEXT,
+  ts INTEGER DEFAULT (unixepoch())
 );
 
 CREATE TABLE IF NOT EXISTS contributions (
@@ -60,7 +108,9 @@ CREATE TABLE IF NOT EXISTS claims (
   royalty_bps INTEGER,
   telegram_chat TEXT,
   attestation TEXT,
-  claimed_at INTEGER
+  claimed_at INTEGER,
+  created_by TEXT,
+  goal REAL
 );
 
 CREATE TABLE IF NOT EXISTS artifacts (
