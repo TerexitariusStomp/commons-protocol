@@ -3,17 +3,18 @@
 # OSS/vendor baseline it composes.
 #
 # Baseline = vendored Solidity libs (contracts/lib, incl. submodule libs)
+#          + vendored upstream source (vendor/upstream/** — MIT/AGPL copies)
 #          + vendored JS/TS deps (node_modules, npm-hoisted at root and any
 #            nested workspace copies).
 # Custom   = contracts/{src,test,script} + workers/*/src + apps/*/src
-#          + scripts/*.mjs + vendor/ (local stubs we maintain).
+#          + scripts/*.mjs.
 # Measurement is deliberately inclusive on the custom side so the metric
 # can't be gamed by parking logic outside src/.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 baseline_sol=$(find contracts/lib -type f \( -name '*.sol' -o -name '*.vy' \) -exec cat {} + 2>/dev/null | wc -l)
-baseline_js=0
+baseline_js=$(find vendor/upstream -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' \) -exec cat {} + 2>/dev/null | wc -l)
 for nm in node_modules apps/*/node_modules workers/*/node_modules; do
   if [ -d "$nm" ]; then
     n=$(find "$nm" -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -exec cat {} + 2>/dev/null | wc -l)
@@ -27,7 +28,6 @@ custom=$(find \
   workers \
   apps \
   scripts \
-  vendor \
   -type f \( -name '*.sol' -o -name '*.vy' -o -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' \) \
   -not -path '*/node_modules/*' \
   -exec cat {} + 2>/dev/null | wc -l)

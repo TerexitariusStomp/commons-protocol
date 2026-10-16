@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FlowPolicy Config (1644 mock)</title>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;
+  --text:#c9d1d9;--text2:#8b949e;--text3:#8b939d;
+  --accent:#58a6ff;--accent-h:#79b8ff;--accent-mut:rgba(88,166,255,.15);
+  --green:#3fb950;--green-mut:rgba(63,185,80,.15);
+  --red:#f85149;--red-mut:rgba(248,81,73,.15);
+  --yellow:#d29922;--yellow-mut:rgba(210,153,34,.15);--purple:#d2a8ff;
+  --flow:#a5d6a7;--flow-mut:rgba(165,214,167,.15);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.5rem;--s6:2rem;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-full:9999px;
+  --ff:system-ui,-apple-system,sans-serif;
+  --shadow:0 8px 24px rgba(0,0,0,.5);--header-h:56px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ff);font-size:15px;line-height:1.5}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+/* appbar */
+.appbar{position:sticky;top:0;z-index:20;height:var(--header-h);display:flex;align-items:center;gap:var(--s3);
+  padding:0 var(--s4);background:var(--bg2);border-bottom:1px solid var(--border)}
+.brand{font-weight:600;display:flex;align-items:center;gap:8px}
+.brand .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;color:#0d1117;font-weight:700}
+.brand .tab{color:var(--text2);font-size:.9rem}
+.brand .tab.active{color:var(--accent)}
+.spacer{flex:1}
+.iconbtn{width:38px;height:38px;border-radius:var(--r-md);border:1px solid transparent;background:transparent;color:var(--text2);font-size:1.1rem;display:grid;place-items:center}
+.iconbtn:hover{background:var(--bg3);color:var(--text)}
+
+/* cfg layout (1627 config overlay pattern) */
+.cfg-root{display:flex;height:calc(100vh - var(--header-h));overflow:hidden}
+.cfg-nav{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow:auto;padding:var(--s3) 0}
+.cfg-nav .gh{padding:var(--s2) var(--s4);color:var(--text3);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+.cfg-nav .it{display:block;width:100%;text-align:left;padding:8px var(--s4);background:none;border:0;border-left:2px solid transparent;color:var(--text2);font-size:.88rem}
+.cfg-nav .it:hover{background:var(--bg3);color:var(--text)}
+.cfg-nav .it.on{background:var(--accent-mut);color:var(--accent);border-left-color:var(--accent)}
+.cfg-content{flex:1;overflow:auto;padding:var(--s5) var(--s6)}
+@media(max-width:680px){
+  .cfg-root{flex-direction:column;height:auto}
+  .cfg-nav{width:100%;border-right:none;border-bottom:1px solid var(--border);padding:var(--s2) 0}
+  .cfg-nav .it{display:inline-block;width:auto;padding:8px var(--s3);border-left:none;border-bottom:2px solid transparent}
+  .cfg-nav .it.on{border-bottom-color:var(--accent);border-left:none}
+  .cfg-content{padding:var(--s4)}
+}
+
+/* content */
+.cfg-h2{font-size:1.2rem;font-weight:700;margin:0 0 4px}
+.cfg-sub{color:var(--text2);font-size:.88rem;margin:0 0 var(--s5)}
+
+/* context switcher pills */
+.ctx-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--s5)}
+.ctx-pill{padding:7px 14px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.82rem;font-weight:600;transition:all .12s;cursor:pointer}
+.ctx-pill:hover{border-color:var(--text2)}
+.ctx-pill.on{background:var(--accent-mut);border-color:var(--accent);color:var(--accent)}
+
+/* denomination (currency / token-kind this policy governs) */
+.ccy-row{display:flex;gap:var(--s4);align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s3) var(--s4);margin-bottom:var(--s4)}
+.ccy-field{flex:0 0 auto}
+.ccy-field label{display:block;font-size:.74rem;color:var(--text2);margin-bottom:5px;font-weight:500}
+.ccy-field select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:8px 10px;color:var(--text);font-size:.9rem}
+.ccy-help{flex:1;font-size:.76rem;color:var(--text3);line-height:1.5}
+@media(max-width:560px){.ccy-row{flex-direction:column;align-items:stretch}}
+
+/* card sections */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4) var(--s5);margin-bottom:var(--s4)}
+.card-head{font-weight:600;font-size:1rem;margin-bottom:var(--s4);display:flex;align-items:center;gap:8px}
+.card-head .pill{font-size:.62rem;font-weight:700;padding:1px 8px;border-radius:var(--r-full);border:1px solid var(--green);color:var(--green);text-transform:uppercase}
+.card-head .pill.sim{border-color:var(--yellow);color:var(--yellow)}
+
+/* viability band visualizer */
+.band-viz{position:relative;margin:var(--s4) 0;user-select:none}
+.band-track{height:48px;background:var(--bg3);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;position:relative}
+.band-region{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.band-deficit{left:0;background:rgba(248,81,73,.18);color:var(--red);border-right:2px dashed var(--red)}
+.band-gradient{background:linear-gradient(90deg,rgba(63,185,80,.08),rgba(88,166,255,.18));color:var(--text2)}
+.band-surplus{background:rgba(63,185,80,.18);color:var(--green);border-left:2px dashed var(--green)}
+.band-labels{display:flex;justify-content:space-between;margin-top:var(--s1);font-size:.72rem;color:var(--text2)}
+.band-labels .marker{display:flex;flex-direction:column;align-items:center}
+.band-labels .mval{font-weight:700;color:var(--text)}
+.band-labels .mlbl{color:var(--text3)}
+
+/* threshold inputs */
+.threshold-row{display:flex;gap:var(--s5);margin-bottom:var(--s4)}
+.threshold-row>.th-field{flex:1}
+.th-field label{display:block;font-size:.78rem;color:var(--text2);margin-bottom:6px;font-weight:500}
+.th-field .inp-row{display:flex;align-items:center;gap:6px}
+.th-field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;color:var(--text);font-size:.95rem;font-variant-numeric:tabular-nums}
+.th-field input:focus{outline:none;border-color:var(--accent)}
+.th-field .unit{color:var(--text2);font-size:.85rem;white-space:nowrap}
+.th-field .help{font-size:.72rem;color:var(--text3);margin-top:4px}
+@media(max-width:480px){.threshold-row{flex-direction:column;gap:var(--s3)}}
+
+/* felt-threshold toggle */
+.felt-toggle{display:flex;align-items:center;gap:10px;padding:10px var(--s4);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:var(--s3);cursor:pointer}
+.felt-toggle .label{flex:1;font-size:.85rem}
+.toggle{width:36px;height:20px;border-radius:var(--r-full);background:var(--bg);border:1px solid var(--border);position:relative;transition:background .15s;flex:0 0 auto}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:var(--r-full);background:#fff;transition:transform .15s}
+.toggle.on::after{transform:translateX(16px)}
+.felt-inferred{background:var(--accent-mut);border:1px solid var(--accent);border-radius:var(--r-md);padding:var(--s3) var(--s4);font-size:.85rem;margin-bottom:var(--s3)}
+.felt-inferred .fi-head{font-weight:600;margin-bottom:4px;color:var(--accent)}
+
+/* gradient curve picker */
+.curve-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:var(--s2)}
+.curve-opt{border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg3);padding:10px 8px;cursor:pointer;text-align:center;transition:all .12s}
+.curve-opt:hover{border-color:var(--text2)}
+.curve-opt.on{border-color:var(--accent);background:var(--accent-mut)}
+.curve-opt svg{display:block;margin:0 auto 6px}
+.curve-opt .cnm{font-size:.78rem;font-weight:600;color:var(--text)}
+.curve-opt .cds{font-size:.66rem;color:var(--text2);margin-top:2px;line-height:1.3}
+
+/* mechanism toggles */
+.mech-row{display:flex;align-items:center;justify-content:space-between;padding:var(--s3) 0;border-bottom:1px solid var(--border);gap:12px}
+.mech-row:last-child{border-bottom:none}
+.mech-left{flex:1}
+.mech-name{font-weight:600;font-size:.9rem}
+.mech-desc{font-size:.74rem;color:var(--text2);margin-top:2px;line-height:1.4}
+.mech-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;text-transform:uppercase;vertical-align:middle}
+.mech-badge.live{color:var(--green);border:1px solid var(--green)}
+.mech-badge.sim{color:var(--yellow);border:1px solid var(--yellow)}
+.mech-ctl{display:flex;align-items:center;gap:8px}
+
+/* tithe / commons */
+.range-row{display:flex;align-items:center;gap:12px;margin:var(--s3) 0}
+.range-row label{font-size:.82rem;color:var(--text2);min-width:60px}
+.range-row input[type=range]{flex:1;height:4px;-webkit-appearance:none;appearance:none;border-radius:var(--r-full);background:var(--bg3);outline:none}
+.range-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:var(--r-full);background:var(--accent);border:2px solid var(--bg)}
+.range-row .val{font-variant-numeric:tabular-nums;font-weight:600;min-width:36px;text-align:right;font-size:.88rem}
+
+/* transparency */
+.transp-opt{display:flex;align-items:center;padding:var(--s3) 0;border-bottom:1px solid var(--border);gap:12px;cursor:pointer}
+.transp-opt:last-child{border-bottom:none}
+.transp-opt .to-text{flex:1}
+.transp-opt .to-name{font-weight:500;font-size:.9rem}
+.transp-opt .to-sub{font-size:.72rem;color:var(--text2);margin-top:2px}
+.transp-opt input[type=radio]{accent-color:var(--accent)}
+
+/* activity-decay settings */
+.decay-sub{padding:var(--s3) var(--s4);background:var(--bg);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);margin-top:-1px}
+
+/* action row */
+.action-bar{display:flex;gap:10px;margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--border)}
+.btn{padding:10px 18px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-weight:600;font-size:.9rem;transition:filter .12s}
+.btn.p{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+.btn.p:hover{filter:brightness(1.1)}
+.btn:hover{border-color:var(--text2)}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent)}
+
+.note{font-size:.8rem;color:var(--text2);background:var(--bg3);border-left:3px solid var(--accent);padding:var(--s3) var(--s4);border-radius:var(--r-sm);margin:var(--s3) 0;line-height:1.5}
+.note.warn{border-left-color:var(--yellow)}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand">
+    <span class="logo">◈</span>
+    <span class="tab">Wallet</span>
+    <span style="color:var(--border);margin:0 4px">/</span>
+    <span class="tab active">Flow Policy</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" title="Help">?</button>
+  <button class="iconbtn" title="Close">✕</button>
+</div>
+
+<div class="cfg-root">
+
+  <!-- side nav (1627 config pattern) -->
+  <div class="cfg-nav">
+    <div class="gh">Context</div>
+    <button class="it on" onclick="switchCtx(this,'awip')">AWIP core team</button>
+    <button class="it" onclick="switchCtx(this,'nao')">NAO ecosystem</button>
+    <button class="it" onclick="switchCtx(this,'circle')">Mutual-aid circle</button>
+    <button class="it" onclick="switchCtx(this,'household')">Household</button>
+    <button class="it" onclick="switchCtx(this,'stewardship')">Watershed hive</button>
+    <div class="gh" style="margin-top:var(--s3)">Policy</div>
+    <button class="it on">Viability band</button>
+    <button class="it">Anti-hoarding</button>
+    <button class="it">Transparency</button>
+    <button class="it">Commons tithe</button>
+  </div>
+
+  <!-- main content -->
+  <div class="cfg-content" id="cfgContent">
+
+    <h2 class="cfg-h2">FlowPolicy — <span id="ctxLabel">AWIP core team</span></h2>
+    <p class="cfg-sub">These settings govern how value flows for you in this context. Changes take effect at the next flow epoch unless you save and simulate first.</p>
+
+    <!-- context switcher (pill row, mobile-friendly) -->
+    <div class="ctx-pills">
+      <div class="ctx-pill on" onclick="selectCtx(this,'AWIP core team')">AWIP core team</div>
+      <div class="ctx-pill" onclick="selectCtx(this,'NAO ecosystem')">NAO ecosystem</div>
+      <div class="ctx-pill" onclick="selectCtx(this,'Mutual-aid circle')">Mutual-aid circle</div>
+      <div class="ctx-pill" onclick="selectCtx(this,'Household')">Household</div>
+      <div class="ctx-pill" onclick="selectCtx(this','Watershed hive')">Watershed hive</div>
+    </div>
+
+    <!-- ── DENOMINATION — which currency / token this policy governs ── -->
+    <div class="ccy-row">
+      <div class="ccy-field">
+        <label>Currency / unit this policy governs</label>
+        <select id="ccySelect" onchange="setCurrency(this.value)">
+          <option value="USD">US dollars ($)</option>
+          <option value="NAO">NAO hours</option>
+          <option value="CARE">Care credits</option>
+        </select>
+      </div>
+      <div class="ccy-help">A FlowPolicy governs <strong>one</strong> denomination — the floor, ceiling, gradient and tithe below all apply to this unit. Hold more than one currency or token? Set a separate band for each by switching here.</div>
+    </div>
+
+    <!-- ── VIABILITY BAND ── -->
+    <div class="card" id="sectionBand">
+      <div class="card-head">Viability band <span class="pill">Live</span></div>
+
+      <!-- felt-threshold toggle -->
+      <div class="felt-toggle" onclick="toggleFelt()">
+        <span class="label">Use felt thresholds (no dollar amounts — system infers from your flow history)</span>
+        <div class="toggle" id="feltToggle"></div>
+      </div>
+      <div class="felt-inferred hidden" id="feltInferred">
+        <div class="fi-head">Inferred from your last 3 months of flow history:</div>
+        Floor: approx. <strong>$800–$1,000/month</strong> &nbsp;·&nbsp; Ceiling: approx. <strong>$1,300–$1,600/month</strong>
+        <div style="margin-top:6px;font-size:.78rem;color:var(--text3)">Does this look right? You can adjust the ranges below or leave them as inferred.</div>
+      </div>
+
+      <!-- numeric threshold inputs -->
+      <div class="threshold-row" id="numericThresholds">
+        <div class="th-field">
+          <label>Floor — support flows in below this</label>
+          <div class="inp-row">
+            <input type="number" value="7000" id="floorInput" oninput="updateBand()"/>
+            <span class="unit">/ month</span>
+          </div>
+          <div class="help">"If we dropped below $7K we'd struggle to focus." — Simon</div>
+        </div>
+        <div class="th-field">
+          <label>Ceiling — surplus flows out above this</label>
+          <div class="inp-row">
+            <input type="number" value="15000" id="ceilingInput" oninput="updateBand()"/>
+            <span class="unit">/ month</span>
+          </div>
+          <div class="help">"$15K for the core team of four — my cup is full." — Simon</div>
+        </div>
+      </div>
+
+      <!-- band visualizer -->
+      <div class="band-viz">
+        <div class="band-track">
+          <div class="band-region band-deficit" id="bandDeficit" style="left:0;width:32%">In deficit</div>
+          <div class="band-region band-gradient" id="bandGradient" style="left:32%;width:40%">Gradient</div>
+          <div class="band-region band-surplus" id="bandSurplus" style="left:72%;width:28%">My cup is full</div>
+        </div>
+        <div class="band-labels">
+          <div class="marker"><span class="mval" id="floorLabel">$7,000</span><span class="mlbl">Floor</span></div>
+          <div class="marker" style="margin-left:auto;margin-right:auto"><span class="mval" style="color:var(--text2);font-size:.7rem">← gradient band →</span></div>
+          <div class="marker"><span class="mval" id="ceilingLabel">$15,000</span><span class="mlbl">Ceiling</span></div>
+        </div>
+      </div>
+
+      <!-- current position indicator -->
+      <div style="display:flex;align-items:center;gap:8px;margin-top:var(--s3);padding:8px 12px;background:var(--green-mut);border:1px solid var(--green);border-radius:var(--r-md)">
+        <span style="font-size:1.1rem">✓</span>
+        <span style="font-size:.85rem">You are currently in the <strong style="color:var(--green)">gradient band</strong> — flowing some surplus out while also positioned to receive if needed. Good.</span>
+      </div>
+    </div>
+
+    <!-- ── GRADIENT CURVE ── -->
+    <div class="card">
+      <div class="card-head">Gradient curve</div>
+      <p style="font-size:.85rem;color:var(--text2);margin:0 0 var(--s3)">Flow is not a tap — it is a gradient. Choose how quickly outward flow ramps up as your balance moves from floor toward ceiling.</p>
+      <div class="curve-grid">
+        <div class="curve-opt on" onclick="selectCurve(this)">
+          <svg width="60" height="32" viewBox="0 0 60 32">
+            <path d="M4 28 C 10 28, 12 4, 56 4" fill="none" stroke="#58a6ff" stroke-width="2"/>
+          </svg>
+          <div class="cnm">Generous early</div>
+          <div class="cds">Start flowing at ~20% above floor; full output near ceiling</div>
+        </div>
+        <div class="curve-opt" onclick="selectCurve(this)">
+          <svg width="60" height="32" viewBox="0 0 60 32">
+            <line x1="4" y1="28" x2="56" y2="4" stroke="#58a6ff" stroke-width="2"/>
+          </svg>
+          <div class="cnm">Linear</div>
+          <div class="cds">Even ramp from floor to ceiling; equal proportion at each point</div>
+        </div>
+        <div class="curve-opt" onclick="selectCurve(this)">
+          <svg width="60" height="32" viewBox="0 0 60 32">
+            <path d="M4 28 C 44 28, 50 8, 56 4" fill="none" stroke="#58a6ff" stroke-width="2"/>
+          </svg>
+          <div class="cnm">Cautious</div>
+          <div class="cds">Hold most back until close to abundance; surge near ceiling</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:var(--s4)">Almost everyone is always flowing something. The gradient model means you give a little while still receiving a little — that simultaneous give-and-receive is what keeps the web alive.</div>
+    </div>
+
+    <!-- ── ANTI-HOARDING MECHANISMS ── -->
+    <div class="card">
+      <div class="card-head">Anti-hoarding mechanisms</div>
+
+      <div class="mech-row">
+        <div class="mech-left">
+          <div class="mech-name">Gradient outflow <span class="mech-badge live">Live</span></div>
+          <div class="mech-desc">Surplus above ceiling flows out automatically through your trust channels toward need. The gradient curve above governs the ramp.</div>
+        </div>
+        <div class="mech-ctl">
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="mech-row">
+        <div class="mech-left">
+          <div class="mech-name">Activity-decay <span class="mech-badge live">Live</span></div>
+          <div class="mech-desc">Flow entitlement diminishes as a contributor becomes inactive — they "drift from the river." Does not reduce the recipient's actual balance; it reduces future flow allocation to them.</div>
+        </div>
+        <div class="mech-ctl">
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+      <div class="decay-sub">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:.8rem;color:var(--text2)">Decay starts after</span>
+          <select style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:5px 8px;color:var(--text);font-size:.85rem">
+            <option>30 days of inactivity</option>
+            <option>60 days</option>
+            <option>90 days</option>
+            <option>Never (no decay)</option>
+          </select>
+          <span style="font-size:.8rem;color:var(--text2)">reaching zero after</span>
+          <select style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:5px 8px;color:var(--text);font-size:.85rem">
+            <option>6 months</option>
+            <option>1 year</option>
+            <option>2 years</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mech-row" style="margin-top:var(--s2)">
+        <div class="mech-left">
+          <div class="mech-name">Demurrage — balance decay <span class="mech-badge sim">Simulation only</span></div>
+          <div class="mech-desc">Idle balances lose a small % per period, incentivising circulation. Live tension: may push toward external investment rather than circulation. Enabled here for simulation only — run the simulation surface to explore the effect on your specific network before arming live.</div>
+        </div>
+        <div class="mech-ctl">
+          <span style="font-size:.72rem;color:var(--yellow);font-weight:600;white-space:nowrap">Sim only</span>
+          <div class="toggle" style="opacity:.5;cursor:not-allowed"></div>
+        </div>
+      </div>
+      <div style="padding:var(--s3) 0 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:.8rem;color:var(--text2)">Simulated rate:</span>
+        <div class="range-row" style="margin:0;flex:1;min-width:200px">
+          <input type="range" min="0" max="5" step="0.5" value="2" oninput="document.getElementById('demurrageVal').textContent=this.value+'%'"/>
+          <span class="val" id="demurrageVal">2%</span>
+          <span style="font-size:.78rem;color:var(--text3)">/month</span>
+        </div>
+      </div>
+      <div class="note warn" style="margin-top:var(--s3)">Demurrage is armed for simulation only. To activate it live, open the simulation surface and observe the effect on your network first.</div>
+    </div>
+
+    <!-- ── COMMONS TITHE ── -->
+    <div class="card">
+      <div class="card-head">Commons tithe</div>
+      <p style="font-size:.85rem;color:var(--text2);margin:0 0 var(--s4)">A fraction of every flow passing through you siphons automatically into the commons pool — collective insurance and purpose-pool funding.</p>
+      <div class="range-row">
+        <label>Tithe %</label>
+        <input type="range" min="0" max="15" step="0.5" value="3" oninput="document.getElementById('titheVal').textContent=this.value+'%'"/>
+        <span class="val" id="titheVal">3%</span>
+      </div>
+      <div style="font-size:.78rem;color:var(--text3);margin-top:4px">At your current flow rate (~$12,400/month) this would contribute approx. <strong style="color:var(--text)">$372/month</strong> to the commons pool.</div>
+      <div class="field" style="margin-top:var(--s3)">
+        <label style="font-size:.78rem;color:var(--text2);display:block;margin-bottom:4px">Destination pool</label>
+        <select style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;color:var(--text);font-size:.9rem">
+          <option>AWIP buffer pool (fills in good times, releases below-floor)</option>
+          <option>NAO commons pool</option>
+          <option>Watershed stewardship fund</option>
+          <option>Custom pool…</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── TRANSPARENCY ── -->
+    <div class="card">
+      <div class="card-head">Transparency for this context</div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:0 var(--s4)">
+        <div class="transp-opt">
+          <div class="to-text">
+            <div class="to-name">Outcome-transparent</div>
+            <div class="to-sub">Network sees that value flowed and its purpose — not exact amounts</div>
+          </div>
+          <input type="radio" name="transp" checked/>
+        </div>
+        <div class="transp-opt">
+          <div class="to-text">
+            <div class="to-name">Story-gated transparency</div>
+            <div class="to-sub">Flow becomes visible once the recipient shares a story-upstream outcome</div>
+          </div>
+          <input type="radio" name="transp"/>
+        </div>
+        <div class="transp-opt">
+          <div class="to-text">
+            <div class="to-name">Fully transparent</div>
+            <div class="to-sub">All participants see exact amounts, timing, and terms</div>
+          </div>
+          <input type="radio" name="transp"/>
+        </div>
+        <div class="transp-opt">
+          <div class="to-text">
+            <div class="to-name">Private edges</div>
+            <div class="to-sub">Only the parties to each flow relationship see details</div>
+          </div>
+          <input type="radio" name="transp"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- action bar -->
+    <div class="action-bar">
+      <button class="btn ghost" onclick="openSim()">⊕ Simulate before saving</button>
+      <div class="spacer"></div>
+      <button class="btn">Discard</button>
+      <button class="btn p" onclick="savePolicy()">Save policy</button>
+    </div>
+
+  </div><!-- /cfg-content -->
+</div><!-- /cfg-root -->
+
+<script>
+// Denomination the policy governs (the (3) currency / token-kind selector).
+const CCY={USD:{sym:'$',suf:''},NAO:{sym:'',suf:' hrs'},CARE:{sym:'',suf:' cr'}};
+let _ccy=CCY.USD;
+function fmtCcy(n){return _ccy.sym+n.toLocaleString()+_ccy.suf;}
+function setCurrency(v){
+  _ccy=CCY[v]||CCY.USD;
+  document.querySelectorAll('.th-field .unit').forEach(u=>{
+    u.textContent=(_ccy.suf?_ccy.suf.trim():_ccy.sym)+' / month';
+  });
+  updateBand();
+}
+function updateBand(){
+  const floor=parseInt(document.getElementById('floorInput').value)||0;
+  const ceil=parseInt(document.getElementById('ceilingInput').value)||0;
+  document.getElementById('floorLabel').textContent=fmtCcy(floor);
+  document.getElementById('ceilingLabel').textContent=fmtCcy(ceil);
+}
+function toggleFelt(){
+  const t=document.getElementById('feltToggle');
+  const fi=document.getElementById('feltInferred');
+  const nt=document.getElementById('numericThresholds');
+  t.classList.toggle('on');
+  const on=t.classList.contains('on');
+  fi.classList.toggle('hidden',!on);
+}
+function selectCurve(el){
+  document.querySelectorAll('.curve-opt').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+function selectCtx(el,label){
+  document.querySelectorAll('.ctx-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('ctxLabel').textContent=label;
+}
+function switchCtx(el,id){
+  document.querySelectorAll('.cfg-nav .it').forEach(i=>i.classList.remove('on'));
+  el.classList.add('on');
+}
+function savePolicy(){alert('FlowPolicy saved for AWIP core team context. Changes take effect at the next flow epoch.');}
+function openSim(){alert('Opening simulation surface with this policy draft…');}
+</script>
+</body>
+</html>

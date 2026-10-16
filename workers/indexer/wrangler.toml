@@ -14,4 +14,6 @@ POT = ""
 START_BLOCK = "0"
 
 [triggers]
-crons = ["*/2 * * * *"]
+crons = ["*/2 * * * *", "5 0 * * *"]
+STABLE = ""
+# ADMIN_KEY -> wrangler secret put ADMIN_KEY

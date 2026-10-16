@@ -5,6 +5,7 @@ import Collection from "./pages/Collection";
 import Pot from "./pages/Pot";
 import Funds from "./pages/Funds";
 import Claim from "./pages/Claim";
+import Flow from "./pages/Flow";
 
 export default function App() {
   const { address } = useAccount();
@@ -18,6 +19,7 @@ export default function App() {
           <NavLink to="/">Collections</NavLink>
           <NavLink to="/pot">Pot</NavLink>
           <NavLink to="/funds">Funds</NavLink>
+          <NavLink to="/flow">Flow</NavLink>
           <NavLink to="/claim">Claim</NavLink>
         </nav>
         <div className="acct">{address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "not connected"}</div>
@@ -28,6 +30,7 @@ export default function App() {
           <Route path="/collection/:addr" element={<Collection />} />
           <Route path="/pot" element={<Pot />} />
           <Route path="/funds" element={<Funds />} />
+          <Route path="/flow" element={<Flow />} />
           <Route path="/claim" element={<Claim />} />
         </Routes>
       </main>

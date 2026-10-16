@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Flow Velocity View (1644 mock)</title>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;
+  --text:#c9d1d9;--text2:#8b949e;--text3:#8b939d;
+  --accent:#58a6ff;--accent-h:#79b8ff;--accent-mut:rgba(88,166,255,.15);
+  --green:#3fb950;--green-mut:rgba(63,185,80,.15);
+  --red:#f85149;--red-mut:rgba(248,81,73,.15);
+  --yellow:#d29922;--yellow-mut:rgba(210,153,34,.15);--purple:#d2a8ff;
+  --flow:#a5d6a7;--flow-mut:rgba(165,214,167,.15);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.5rem;--s6:2rem;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-full:9999px;
+  --ff:system-ui,-apple-system,sans-serif;
+  --shadow:0 8px 24px rgba(0,0,0,.5);--header-h:56px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ff);font-size:15px;line-height:1.5}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+
+/* appbar (1627 pattern) */
+.appbar{position:sticky;top:0;z-index:20;height:var(--header-h);display:flex;align-items:center;gap:var(--s3);
+  padding:0 var(--s4);background:var(--bg2);border-bottom:1px solid var(--border)}
+.brand{font-weight:600;display:flex;align-items:center;gap:8px}
+.brand .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;color:#0d1117;font-weight:700}
+.brand .tab{color:var(--text2);font-size:.9rem}
+.brand .tab.active{color:var(--accent)}
+.spacer{flex:1}
+.iconbtn{width:38px;height:38px;border-radius:var(--r-md);border:1px solid transparent;background:transparent;color:var(--text2);font-size:1.1rem;display:grid;place-items:center}
+.iconbtn:hover{background:var(--bg3);color:var(--text)}
+
+/* page */
+.page{max-width:900px;margin:0 auto;padding:var(--s5) var(--s4) 80px}
+
+/* hero state banner */
+.state-hero{border-radius:var(--r-xl);padding:var(--s5) var(--s6);margin-bottom:var(--s5);display:flex;align-items:flex-start;gap:var(--s5);flex-wrap:wrap}
+.state-hero.surplus{background:linear-gradient(135deg,rgba(63,185,80,.14),rgba(165,214,167,.08));border:1px solid var(--green)}
+.state-hero.deficit{background:linear-gradient(135deg,rgba(248,81,73,.14),rgba(210,153,34,.06));border:1px solid var(--yellow)}
+.state-hero.balanced{background:var(--bg2);border:1px solid var(--border)}
+.state-main{flex:1;min-width:200px}
+.state-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:var(--s1)}
+.state-hero.surplus .state-label{color:var(--green)}
+.state-hero.deficit .state-label{color:var(--yellow)}
+.state-hero.balanced .state-label{color:var(--text2)}
+.state-phrase{font-size:2rem;font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:var(--s2)}
+.state-hero.surplus .state-phrase{color:var(--green)}
+.state-hero.deficit .state-phrase{color:var(--yellow)}
+.state-sub{font-size:.88rem;color:var(--text2)}
+.state-band{display:flex;flex-direction:column;gap:var(--s2);min-width:200px}
+.state-band .band-row{display:flex;justify-content:space-between;font-size:.8rem}
+.state-band .bval{font-variant-numeric:tabular-nums;font-weight:600}
+.band-mini{height:8px;background:var(--bg3);border-radius:var(--r-full);overflow:hidden;margin:4px 0;position:relative}
+.band-mini .fill{height:100%;border-radius:var(--r-full);transition:width .4s}
+.band-mini .floor-marker,.band-mini .ceil-marker{position:absolute;top:0;bottom:0;width:2px;background:var(--border)}
+.band-mini .current-dot{position:absolute;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:var(--r-full);border:2px solid var(--bg);transition:left .4s}
+.btn-sm{padding:7px 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-weight:600;font-size:.82rem}
+.btn-sm.p{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+.btn-sm:hover{border-color:var(--accent)}
+
+/* period nav */
+.period-nav{display:flex;align-items:center;gap:10px;margin-bottom:var(--s4)}
+.period-nav button{width:32px;height:32px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:1rem;display:grid;place-items:center}
+.period-nav button:hover{border-color:var(--accent);color:var(--accent)}
+.period-label{font-weight:600;font-size:.95rem}
+.period-sub{font-size:.78rem;color:var(--text2)}
+
+/* tab strip */
+.tabstrip{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:var(--s4)}
+.tabstrip button{padding:10px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);font-weight:600;font-size:.88rem;margin-bottom:-1px}
+.tabstrip button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tabstrip button:hover:not(.on){color:var(--text)}
+
+/* flow grid */
+.flow-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4);margin-bottom:var(--s5)}
+@media(max-width:640px){.flow-grid{grid-template-columns:1fr}}
+.flow-col{}
+.col-head{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:var(--s3);display:flex;align-items:center;justify-content:space-between}
+.col-total{font-variant-numeric:tabular-nums;font-weight:700;font-size:.95rem}
+.col-total.in{color:var(--accent)}
+.col-total.out{color:var(--green)}
+
+/* flow row */
+.flow-row{display:flex;align-items:center;gap:10px;padding:var(--s3) 0;border-bottom:1px solid var(--border)}
+.flow-row:last-child{border-bottom:none}
+.flow-avatar{width:34px;height:34px;border-radius:var(--r-full);display:grid;place-items:center;font-size:.85rem;font-weight:700;color:#0d1117;flex:0 0 auto}
+.flow-body{flex:1;min-width:0}
+.flow-name{font-weight:600;font-size:.9rem}
+.flow-desc{font-size:.72rem;color:var(--text2);margin-top:1px}
+.flow-amount{font-variant-numeric:tabular-nums;font-weight:700;font-size:.95rem;text-align:right;white-space:nowrap}
+.flow-amount.in{color:var(--accent)}
+.flow-amount.out{color:var(--green)}
+.flow-bar{height:3px;background:var(--bg3);border-radius:var(--r-full);margin-top:4px;overflow:hidden}
+.flow-bar .fill{height:100%;border-radius:var(--r-full)}
+.fill-in{background:var(--accent)}
+.fill-out{background:var(--green)}
+.flow-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:var(--r-full);margin-left:4px;vertical-align:middle}
+.fb-channel{color:var(--text2);border:1px solid var(--border)}
+.fb-agreement{color:var(--accent);border:1px solid var(--accent-mut)}
+.fb-auto{color:var(--flow);border:1px solid var(--flow-mut)}
+
+/* cascade preview */
+.cascade-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4);margin-bottom:var(--s4)}
+.cascade-head{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:var(--s3)}
+.cascade-tree{padding-left:var(--s3)}
+.cascade-node{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.85rem}
+.cascade-node.level-1{padding-left:0}
+.cascade-node.level-2{padding-left:var(--s4)}
+.cascade-node.level-3{padding-left:calc(var(--s4)*2)}
+.cascade-connector{color:var(--text3);flex:0 0 auto;font-size:.7rem}
+.cascade-avatar{width:24px;height:24px;border-radius:var(--r-full);display:grid;place-items:center;font-size:.65rem;font-weight:700;color:#0d1117;flex:0 0 auto}
+.cascade-name{flex:1;font-weight:500}
+.cascade-amt{font-variant-numeric:tabular-nums;font-size:.8rem;color:var(--text2)}
+.cascade-note{font-size:.68rem;color:var(--text3);margin-left:4px}
+
+/* net summary */
+.net-summary{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4);margin-bottom:var(--s4)}
+.net-row{display:flex;justify-content:space-between;align-items:center;padding:var(--s2) 0;border-bottom:1px solid var(--border)}
+.net-row:last-child{border-bottom:none;font-weight:700}
+.net-row .nval{font-variant-numeric:tabular-nums;font-weight:600}
+.net-row .nval.in{color:var(--accent)}
+.net-row .nval.out{color:var(--green)}
+.net-row .nval.net-pos{color:var(--green)}
+.net-row .nval.net-neg{color:var(--yellow)}
+
+/* mini chart */
+.sparkwrap{margin-bottom:var(--s5)}
+.sparkwrap .sh{display:flex;justify-content:space-between;font-size:.74rem;color:var(--text2);margin-bottom:var(--s2)}
+.sparkbar{display:flex;align-items:flex-end;gap:3px;height:56px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:8px 12px}
+.sparkcol{flex:1;border-radius:2px 2px 0 0;min-height:4px;transition:opacity .12s}
+.sparkcol:hover{opacity:.8}
+.sparklabel{display:flex;justify-content:space-between;font-size:.66rem;color:var(--text3);margin-top:4px;padding:0 12px}
+
+/* first-run empty state */
+.hidden{display:none!important}
+.firstrun{text-align:center;padding:var(--s6) var(--s4)}
+.firstrun .ico{font-size:2.5rem;opacity:.8;margin-bottom:var(--s3)}
+.firstrun h3{font-weight:700;font-size:1.2rem;margin:0 0 var(--s2)}
+.firstrun p{color:var(--text2);font-size:.9rem;max-width:400px;margin:0 auto var(--s4)}
+
+/* actions */
+.action-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:var(--s4)}
+.btn{padding:9px 16px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-weight:600;font-size:.88rem}
+.btn.p{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+.btn:hover{border-color:var(--accent)}
+
+/* state selector (demo) */
+.demo-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px var(--s4);margin-bottom:var(--s4);display:flex;align-items:center;gap:12px;font-size:.82rem;color:var(--text2)}
+.demo-bar select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:5px 10px;color:var(--text);font-size:.82rem}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand">
+    <span class="logo">◈</span>
+    <span class="tab">Wallet</span>
+    <span style="color:var(--border);margin:0 4px">/</span>
+    <span class="tab active">Flow</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" title="Flow settings" onclick="alert('Opens FlowPolicy config')">⚙</button>
+</div>
+
+<div class="page">
+
+  <!-- demo state switcher (mock only) -->
+  <div class="demo-bar">
+    <span>Mock state:</span>
+    <select onchange="setState(this.value)">
+      <option value="surplus">My cup is full (surplus)</option>
+      <option value="balanced" selected>Gradient band (balanced)</option>
+      <option value="deficit">In deficit</option>
+      <option value="firstrun">First run (no flows)</option>
+    </select>
+    <span style="color:var(--text3)">(design-time only)</span>
+  </div>
+
+  <!-- ══ HERO STATE BANNER ══ -->
+  <div class="state-hero balanced" id="stateHero">
+    <div class="state-main">
+      <div class="state-label" id="stateLabel">Gradient band</div>
+      <div class="state-phrase" id="statePhrase">In the flow</div>
+      <div class="state-sub" id="stateSub">You are between floor and ceiling — flowing some surplus out while remaining positioned to receive support if needed.</div>
+      <div style="margin-top:var(--s4);display:flex;gap:10px">
+        <button class="btn-sm p" onclick="alert('Open simulation surface')">⊕ Simulate</button>
+        <button class="btn-sm" onclick="alert('Open FlowPolicy config')">Adjust policy</button>
+      </div>
+    </div>
+    <div class="state-band">
+      <div class="band-row"><span style="color:var(--text2)">Position</span><span class="bval" id="posLabel">$11,200 / $15,000 ceiling</span></div>
+      <div class="band-mini">
+        <div class="floor-marker" style="left:47%"></div>
+        <div class="ceil-marker" style="left:100%"></div>
+        <div class="fill" id="bandFill" style="width:75%;background:linear-gradient(90deg,var(--red-mut),var(--accent-mut))"></div>
+        <div class="current-dot" id="currentDot" style="left:73%;background:var(--accent)"></div>
+      </div>
+      <div class="band-row"><span style="color:var(--text2)">Floor</span><span class="bval">$7,000</span></div>
+      <div class="band-row"><span style="color:var(--text2)">Ceiling</span><span class="bval">$15,000</span></div>
+      <div class="band-row" style="margin-top:4px"><span style="color:var(--text2)">Net this period</span><span class="bval" id="netLabel" style="color:var(--green)">+$2,100</span></div>
+    </div>
+  </div>
+
+  <!-- period nav -->
+  <div class="period-nav" id="periodNav">
+    <button onclick="alert('Previous period')">‹</button>
+    <div>
+      <div class="period-label">June 2026</div>
+      <div class="period-sub">Current period · 12 days remaining</div>
+    </div>
+    <button onclick="alert('Next period')">›</button>
+    <div class="spacer"></div>
+    <div style="font-size:.78rem;color:var(--text2)">AWIP core team context</div>
+  </div>
+
+  <!-- tab strip -->
+  <div class="tabstrip" id="tabStrip">
+    <button class="on" onclick="switchTab(this,'river')">River</button>
+    <button onclick="switchTab(this,'agreements')">Agreements (3)</button>
+    <button onclick="switchTab(this,'history')">History</button>
+  </div>
+
+  <!-- ══ RIVER TAB ══ -->
+  <div id="tabRiver">
+
+    <!-- first-run state (hidden by default) -->
+    <div class="firstrun hidden" id="firstRun">
+      <div class="ico">🌊</div>
+      <h3>Your river is quiet</h3>
+      <p>You have no active flow agreements yet. Set your viability band and create your first flow agreement to start the river flowing.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn p" onclick="alert('Open FlowPolicy config')">Set viability band</button>
+        <button class="btn" onclick="alert('Create flow agreement')">Create flow agreement</button>
+      </div>
+    </div>
+
+    <!-- active river view -->
+    <div id="riverContent">
+
+      <!-- net summary -->
+      <div class="net-summary">
+        <div class="net-row"><span>Flows in this period</span><span class="nval in" id="summaryIn">+$3,840</span></div>
+        <div class="net-row"><span>Flows out this period</span><span class="nval out" id="summaryOut">−$1,740</span></div>
+        <div class="net-row"><span>Commons tithe (3%)</span><span class="nval out">−$115</span></div>
+        <div class="net-row"><span style="font-weight:700">Net position</span><span class="nval net-pos" id="summaryNet">+$1,985</span></div>
+      </div>
+
+      <!-- sparkline - 6 month history -->
+      <div class="sparkwrap">
+        <div class="sh"><span>6-month flow history</span><span id="sparkLegend">Blue = in · Green = out</span></div>
+        <div class="sparkbar">
+          <div class="sparkcol" style="height:60%;background:var(--accent);opacity:.7" title="Jan in"></div>
+          <div class="sparkcol" style="height:30%;background:var(--green)" title="Jan out"></div>
+          <div class="sparkcol" style="height:45%;background:var(--accent);opacity:.7" title="Feb in"></div>
+          <div class="sparkcol" style="height:25%;background:var(--green)" title="Feb out"></div>
+          <div class="sparkcol" style="height:20%;background:var(--yellow);opacity:.8" title="Mar in (deficit)"></div>
+          <div class="sparkcol" style="height:8%;background:var(--green)" title="Mar out"></div>
+          <div class="sparkcol" style="height:55%;background:var(--accent);opacity:.7" title="Apr in"></div>
+          <div class="sparkcol" style="height:35%;background:var(--green)" title="Apr out"></div>
+          <div class="sparkcol" style="height:70%;background:var(--accent);opacity:.7" title="May in"></div>
+          <div class="sparkcol" style="height:40%;background:var(--green)" title="May out"></div>
+          <div class="sparkcol" style="height:75%;background:var(--accent);opacity:.7" title="Jun in (current)"></div>
+          <div class="sparkcol" style="height:45%;background:var(--green)" title="Jun out (current)"></div>
+        </div>
+        <div class="sparklabel">
+          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+        </div>
+      </div>
+
+      <!-- flows in / out columns -->
+      <div class="flow-grid">
+
+        <!-- FLOWS IN -->
+        <div class="flow-col">
+          <div class="col-head">
+            <span>Flowing in</span>
+            <span class="col-total in" id="colInTotal">+$3,840</span>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-avatar" style="background:linear-gradient(135deg,var(--accent),var(--purple))">Z</div>
+            <div class="flow-body">
+              <div class="flow-name">@zachary <span class="flow-badge fb-auto">auto</span></div>
+              <div class="flow-desc">Trust-weight channel · gradient band</div>
+              <div class="flow-bar"><div class="fill fill-in" style="width:52%"></div></div>
+            </div>
+            <div class="flow-amount in">+$1,980</div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-avatar" style="background:linear-gradient(135deg,var(--green),var(--flow))">N</div>
+            <div class="flow-body">
+              <div class="flow-name">NAO commons pool <span class="flow-badge fb-agreement">pool</span></div>
+              <div class="flow-desc">Buffer pool release · you were below floor Apr 14–18</div>
+              <div class="flow-bar"><div class="fill fill-in" style="width:35%"></div></div>
+            </div>
+            <div class="flow-amount in">+$1,200</div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-avatar" style="background:linear-gradient(135deg,var(--yellow),var(--red))">C</div>
+            <div class="flow-body">
+              <div class="flow-name">@cataleya <span class="flow-badge fb-channel">channel</span></div>
+              <div class="flow-desc">Relational channel · support this month</div>
+              <div class="flow-bar"><div class="fill fill-in" style="width:17%"></div></div>
+            </div>
+            <div class="flow-amount in">+$660</div>
+          </div>
+        </div>
+
+        <!-- FLOWS OUT -->
+        <div class="flow-col">
+          <div class="col-head">
+            <span>Flowing out</span>
+            <span class="col-total out">−$1,855</span>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-avatar" style="background:linear-gradient(135deg,#6bcb77,#4d9941)">J</div>
+            <div class="flow-body">
+              <div class="flow-name">@jay <span class="flow-badge fb-auto">auto</span></div>
+              <div class="flow-desc">Gradient outflow · NAO core team</div>
+              <div class="flow-bar"><div class="fill fill-out" style="width:60%"></div></div>
+            </div>
+            <div class="flow-amount out">−$740</div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-avatar" style="background:linear-gradient(135deg,#81c784,#388e3c)">D</div>
+            <div class="flow-body">
+              <div class="flow-name">@day <span class="flow-badge fb-auto">auto</span></div>
+              <div class="flow-desc">Gradient outflow · NAO core team</div>
+              <div class="flow-bar"><div class="fill fill-out" style="width:45%"></div></div>
+            </div>
+            <div class="flow-amount out">−$560</div>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-avatar" style="background:linear-gradient(135deg,var(--flow),#5ca05c)">🌿</div>
+            <div class="flow-body">
+              <div class="flow-name">Watershed hive <span class="flow-badge fb-agreement">stewardship</span></div>
+              <div class="flow-desc">Flow to the earth · Sierra Nevada team</div>
+              <div class="flow-bar"><div class="fill fill-out" style="width:28%"></div></div>
+            </div>
+            <div class="flow-amount out">−$440</div>
+          </div>
+
+          <div class="flow-row" style="opacity:.6">
+            <div class="flow-avatar" style="background:var(--bg3);border:1px solid var(--border);font-size:.7rem">3%</div>
+            <div class="flow-body">
+              <div class="flow-name">Commons tithe <span class="flow-badge fb-auto">auto</span></div>
+              <div class="flow-desc">3% of flows → AWIP buffer pool</div>
+              <div class="flow-bar"><div class="fill fill-out" style="width:8%"></div></div>
+            </div>
+            <div class="flow-amount" style="color:var(--text2)">−$115</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CASCADE PREVIEW ══ -->
+      <div class="cascade-wrap">
+        <div class="cascade-head">Cascade preview — where your outflows travel downstream</div>
+        <div class="cascade-tree">
+
+          <div class="cascade-node level-1">
+            <div class="cascade-avatar" style="background:linear-gradient(135deg,#6bcb77,#4d9941)">J</div>
+            <span class="cascade-name">@jay</span>
+            <span class="cascade-amt">−$740 from you</span>
+          </div>
+          <div class="cascade-node level-2">
+            <span class="cascade-connector">↳</span>
+            <div class="cascade-avatar" style="background:linear-gradient(135deg,var(--purple),#9050c0)">M</div>
+            <span class="cascade-name">@michael</span>
+            <span class="cascade-amt">~$240</span>
+            <span class="cascade-note">via Jay's gradient outflow</span>
+          </div>
+          <div class="cascade-node level-2">
+            <span class="cascade-connector">↳</span>
+            <div class="cascade-avatar" style="background:linear-gradient(135deg,var(--flow),#5ca05c)">🌿</div>
+            <span class="cascade-name">Watershed hive</span>
+            <span class="cascade-amt">~$180</span>
+            <span class="cascade-note">Jay flows to the earth too</span>
+          </div>
+
+          <div class="cascade-node level-1" style="margin-top:8px">
+            <div class="cascade-avatar" style="background:linear-gradient(135deg,#81c784,#388e3c)">D</div>
+            <span class="cascade-name">@day</span>
+            <span class="cascade-amt">−$560 from you</span>
+          </div>
+          <div class="cascade-node level-2">
+            <span class="cascade-connector">↳</span>
+            <div class="cascade-avatar" style="background:linear-gradient(135deg,var(--accent),var(--purple))">B</div>
+            <span class="cascade-name">@brent</span>
+            <span class="cascade-amt">~$190</span>
+            <span class="cascade-note">via Day's trust channel</span>
+          </div>
+
+          <div class="cascade-node level-1" style="margin-top:8px">
+            <div class="cascade-avatar" style="background:linear-gradient(135deg,var(--flow),#5ca05c)">🌿</div>
+            <span class="cascade-name">Watershed hive (Sierra Nevada)</span>
+            <span class="cascade-amt">−$440 from you</span>
+          </div>
+          <div class="cascade-node level-2">
+            <span class="cascade-connector">↳</span>
+            <div style="font-size:.78rem;color:var(--text2)">Flows to bioregional team + two Foundations · unpriceable regenerative work</div>
+          </div>
+
+        </div>
+        <div style="margin-top:var(--s3);text-align:right">
+          <button class="btn" style="font-size:.8rem" onclick="alert('Open full topology view')">View full topology →</button>
+        </div>
+      </div>
+
+      <!-- action strip -->
+      <div class="action-strip">
+        <button class="btn p" onclick="alert('Create flow agreement')">+ Flow agreement</button>
+        <button class="btn" onclick="alert('Open FlowPolicy config')">Adjust policy</button>
+        <button class="btn" onclick="alert('Open simulation surface')">⊕ Simulate next epoch</button>
+      </div>
+
+    </div><!-- /riverContent -->
+  </div><!-- /tabRiver -->
+
+</div><!-- /page -->
+
+<script>
+const STATES={
+  surplus:{
+    cls:'surplus',label:'My cup is full',phrase:'My cup is full',
+    sub:'You are above your ceiling — surplus is flowing outward through your trust channels toward those in need.',
+    posLabel:'$17,400 / $15,000 ceiling',bandPos:'95%',dotColor:'var(--green)',
+    netLabel:'+$5,200 net outflow',netCls:'net-pos',
+    summaryIn:'+$2,100',summaryOut:'−$7,300',summaryNet:'+$2,100 in · flowing out'
+  },
+  balanced:{
+    cls:'balanced',label:'Gradient band',phrase:'In the flow',
+    sub:'You are between floor and ceiling — flowing some surplus out while remaining positioned to receive support if needed.',
+    posLabel:'$11,200 / $15,000 ceiling',bandPos:'74%',dotColor:'var(--accent)',
+    netLabel:'+$2,100',netCls:'net-pos',
+    summaryIn:'+$3,840',summaryOut:'−$1,855',summaryNet:'+$1,985'
+  },
+  deficit:{
+    cls:'deficit',label:'In deficit',phrase:'In deficit',
+    sub:'You are below floor. Support is drawing in from your network. No action needed — the protocol is working.',
+    posLabel:'$5,800 / $7,000 floor',bandPos:'35%',dotColor:'var(--yellow)',
+    netLabel:'−$1,200 drawing in',netCls:'net-neg',
+    summaryIn:'+$1,200',summaryOut:'−$0 (outflow paused)',summaryNet:'−$1,200 drawing support'
+  },
+  firstrun:{cls:'balanced',label:'',phrase:'',sub:'',posLabel:'',bandPos:'50%',dotColor:'var(--text2)',netLabel:'',netCls:''}
+};
+
+function setState(s){
+  const st=STATES[s]||STATES.balanced;
+  const hero=document.getElementById('stateHero');
+  hero.className='state-hero '+st.cls;
+  document.getElementById('stateLabel').textContent=st.label;
+  document.getElementById('statePhrase').textContent=st.phrase;
+  document.getElementById('stateSub').textContent=st.sub;
+  document.getElementById('posLabel').textContent=st.posLabel;
+  document.getElementById('currentDot').style.left=st.bandPos;
+  document.getElementById('currentDot').style.background=st.dotColor;
+  document.getElementById('netLabel').textContent=st.netLabel;
+  document.getElementById('netLabel').style.color=st.netCls==='net-neg'?'var(--yellow)':'var(--green)';
+  document.getElementById('summaryIn').textContent=st.summaryIn||'+$3,840';
+  document.getElementById('summaryOut').textContent=st.summaryOut||'−$1,855';
+  document.getElementById('summaryNet').textContent=st.summaryNet||'+$1,985';
+  const fr=document.getElementById('firstRun');
+  const rc=document.getElementById('riverContent');
+  // First run (no flows): hide the state hero (the "cup full" band + Simulate),
+  // the period nav, and the tab strip — show only the empty-state prompt. None
+  // of that chrome means anything before the first flow exists.
+  const stateChrome=[hero,document.getElementById('periodNav'),document.getElementById('tabStrip')];
+  if(s==='firstrun'){
+    fr.classList.remove('hidden');rc.classList.add('hidden');
+    stateChrome.forEach(e=>e&&e.classList.add('hidden'));
+  } else {
+    fr.classList.add('hidden');rc.classList.remove('hidden');
+    stateChrome.forEach(e=>e&&e.classList.remove('hidden'));
+  }
+}
+function switchTab(el,id){
+  document.querySelectorAll('.tabstrip button').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+</script>
+</body>
+</html>

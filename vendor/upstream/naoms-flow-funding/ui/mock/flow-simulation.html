@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Flow Simulation (1644 mock)</title>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;
+  --text:#c9d1d9;--text2:#8b949e;--text3:#8b939d;
+  --accent:#58a6ff;--accent-h:#79b8ff;--accent-mut:rgba(88,166,255,.15);
+  --green:#3fb950;--green-mut:rgba(63,185,80,.15);
+  --red:#f85149;--red-mut:rgba(248,81,73,.15);
+  --yellow:#d29922;--yellow-mut:rgba(210,153,34,.15);--purple:#d2a8ff;
+  --flow:#a5d6a7;--flow-mut:rgba(165,214,167,.15);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.5rem;--s6:2rem;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-full:9999px;
+  --ff:system-ui,-apple-system,sans-serif;
+  --shadow:0 8px 24px rgba(0,0,0,.5);--header-h:56px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ff);font-size:15px;line-height:1.5}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+input,select{font-family:inherit}
+
+/* appbar */
+.appbar{position:sticky;top:0;z-index:20;height:var(--header-h);display:flex;align-items:center;gap:var(--s3);
+  padding:0 var(--s4);background:var(--bg2);border-bottom:1px solid var(--border)}
+.brand{font-weight:600;display:flex;align-items:center;gap:8px}
+.brand .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;color:#0d1117;font-weight:700}
+.brand .tab{color:var(--text2);font-size:.9rem}
+.brand .tab.active{color:var(--accent)}
+.spacer{flex:1}
+.iconbtn{width:38px;height:38px;border-radius:var(--r-md);border:1px solid transparent;background:transparent;color:var(--text2);font-size:1.1rem;display:grid;place-items:center}
+.iconbtn:hover{background:var(--bg3);color:var(--text)}
+
+/* page */
+.page{max-width:980px;margin:0 auto;padding:var(--s5) var(--s4) 80px}
+.backlink{display:inline-flex;align-items:center;gap:6px;color:var(--accent);cursor:pointer;font-size:.85rem;margin-bottom:var(--s4);background:none;border:none;padding:0}
+.ph{margin-bottom:var(--s4)}
+.ph h1{font-size:1.4rem;font-weight:700;margin:0 0 4px}
+.ph .sub{color:var(--text2);font-size:.9rem;margin:0}
+
+/* sim banner */
+.sim-banner{background:var(--yellow-mut);border:1px solid var(--yellow);border-radius:var(--r-md);padding:10px var(--s4);font-size:.85rem;margin-bottom:var(--s4);display:flex;align-items:center;gap:10px}
+.sim-banner .sb-icon{font-size:1.1rem}
+.sim-banner strong{color:var(--yellow)}
+
+/* two-col layout */
+.sim-layout{display:grid;grid-template-columns:320px 1fr;gap:var(--s4);align-items:start}
+@media(max-width:780px){.sim-layout{grid-template-columns:1fr}}
+
+/* controls panel */
+.ctrl-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4);position:sticky;top:calc(var(--header-h) + var(--s4))}
+.ctrl-head{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:var(--s3)}
+.field{margin:var(--s3) 0}
+.field label{display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:500}
+.field .ctl{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:8px 10px;color:var(--text);font-size:.9rem}
+.field .ctl:focus{outline:none;border-color:var(--accent)}
+.field .help{font-size:.7rem;color:var(--text3);margin-top:3px;line-height:1.4}
+
+/* policy variant comparison */
+.variant-toggle{display:flex;gap:6px;margin-bottom:var(--s3)}
+.variant-btn{flex:1;padding:8px 6px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.8rem;font-weight:600;text-align:center}
+.variant-btn.on{border-color:var(--accent);background:var(--accent-mut);color:var(--accent)}
+.variant-btn:hover:not(.on){border-color:var(--text2)}
+.variant-diff{font-size:.74rem;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--s2) var(--s3);margin-bottom:var(--s3)}
+.variant-diff .vd-row{display:flex;justify-content:space-between;padding:2px 0}
+.variant-diff .vd-changed{color:var(--yellow);font-weight:600}
+
+/* mechanism overrides */
+.mech-override{display:flex;align-items:center;gap:8px;padding:var(--s2) 0;border-bottom:1px solid var(--border);font-size:.82rem}
+.mech-override:last-child{border-bottom:none}
+.mech-override .mo-name{flex:1}
+.mech-override .mo-badge{font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:var(--r-full)}
+.mb-live{color:var(--green);border:1px solid var(--green)}
+.mb-sim{color:var(--yellow);border:1px solid var(--yellow)}
+.mb-off{color:var(--text3);border:1px solid var(--border)}
+.toggle{width:34px;height:18px;border-radius:var(--r-full);background:var(--bg);border:1px solid var(--border);position:relative;flex:0 0 auto;cursor:pointer;transition:background .15s}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:var(--r-full);background:#fff;transition:transform .15s}
+.toggle.on::after{transform:translateX(16px)}
+
+/* run button */
+.run-btn{width:100%;padding:12px;border-radius:var(--r-md);background:var(--accent);color:#0d1117;font-weight:700;font-size:.95rem;border:none;margin-top:var(--s4);transition:filter .12s}
+.run-btn:hover{filter:brightness(1.1)}
+.run-btn.running{background:var(--bg3);color:var(--text2);cursor:wait}
+
+/* results panel */
+.results-panel{}
+
+/* epoch summary cards */
+.epoch-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3);margin-bottom:var(--s4)}
+@media(max-width:500px){.epoch-cards{grid-template-columns:1fr 1fr}}
+.epoch-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s3) var(--s4)}
+.epoch-card .ec-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:4px}
+.epoch-card .ec-val{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.epoch-card .ec-sub{font-size:.72rem;color:var(--text2);margin-top:4px}
+.ec-surplus{border-color:var(--green)}
+.ec-surplus .ec-val{color:var(--green)}
+.ec-deficit{border-color:var(--yellow)}
+.ec-deficit .ec-val{color:var(--yellow)}
+.ec-neutral .ec-val{color:var(--accent)}
+
+/* period table */
+.period-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:var(--s4);overflow:hidden}
+.pt-head{display:grid;grid-template-columns:80px 1fr 1fr 1fr 1fr 120px;padding:10px var(--s4);background:var(--bg3);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3)}
+.pt-row{display:grid;grid-template-columns:80px 1fr 1fr 1fr 1fr 120px;padding:10px var(--s4);border-top:1px solid var(--border);font-size:.85rem;align-items:center;transition:background .1s}
+.pt-row:hover{background:var(--bg3)}
+.pt-row .period-badge{font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:var(--r-full)}
+.pb-surplus{color:var(--green);background:var(--green-mut)}
+.pb-deficit{color:var(--yellow);background:var(--yellow-mut)}
+.pb-balanced{color:var(--accent);background:var(--accent-mut)}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.num.pos{color:var(--green)}
+.num.neg{color:var(--yellow)}
+.num.neutral{color:var(--accent)}
+.demurrage-col{color:var(--yellow);font-style:italic}
+@media(max-width:680px){
+  .pt-head,.pt-row{grid-template-columns:60px 1fr 1fr 1fr}
+  .hide-mobile{display:none}
+}
+
+/* event timeline */
+.timeline{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4);margin-bottom:var(--s4)}
+.timeline-head{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:var(--s3)}
+.tl-row{display:flex;align-items:flex-start;gap:12px;padding:var(--s3) 0;border-bottom:1px solid var(--border)}
+.tl-row:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:var(--r-full);flex:0 0 auto;margin-top:5px}
+.tl-dot.surplus{background:var(--green)}
+.tl-dot.deficit{background:var(--yellow)}
+.tl-dot.demurrage{background:var(--yellow);border:2px solid var(--bg)}
+.tl-dot.flow{background:var(--accent)}
+.tl-dot.policy{background:var(--purple)}
+.tl-body{flex:1}
+.tl-title{font-weight:600;font-size:.88rem}
+.tl-desc{font-size:.76rem;color:var(--text2);margin-top:2px;line-height:1.4}
+.tl-when{font-size:.72rem;color:var(--text3);white-space:nowrap;margin-top:3px}
+.tl-amount{font-variant-numeric:tabular-nums;font-size:.88rem;font-weight:600;text-align:right;white-space:nowrap}
+
+/* comparison chart */
+.comparison-chart{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s4);margin-bottom:var(--s4)}
+.cc-head{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:var(--s3)}
+.cc-chart{display:flex;gap:3px;align-items:flex-end;height:100px;padding:8px;background:var(--bg3);border-radius:var(--r-md)}
+.cc-group{flex:1;display:flex;gap:2px;align-items:flex-end}
+.cc-bar{flex:1;border-radius:2px 2px 0 0;min-height:3px;transition:opacity .12s}
+.cc-bar:hover{opacity:.7}
+.cc-labels{display:flex;justify-content:space-between;font-size:.66rem;color:var(--text3);margin-top:4px;padding:0 8px}
+.cc-legend{display:flex;gap:16px;margin-top:var(--s2);font-size:.74rem;color:var(--text2)}
+.cc-legend .dot{width:10px;height:10px;border-radius:var(--r-full);display:inline-block;margin-right:4px;vertical-align:middle}
+
+/* commit CTA */
+.commit-card{background:linear-gradient(135deg,rgba(63,185,80,.1),rgba(165,214,167,.06));border:1px solid var(--green);border-radius:var(--r-xl);padding:var(--s5);display:flex;align-items:flex-start;gap:var(--s4);flex-wrap:wrap}
+.commit-body{flex:1;min-width:200px}
+.commit-body h3{margin:0 0 var(--s2);font-size:1rem}
+.commit-body p{margin:0;font-size:.85rem;color:var(--text2)}
+.commit-actions{display:flex;flex-direction:column;gap:8px;min-width:160px}
+.btn{padding:10px 18px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-weight:600;font-size:.9rem}
+.btn.p{background:var(--green);color:#0d1117;border-color:var(--green)}
+.btn.p:hover{filter:brightness(1.1)}
+.btn:hover{border-color:var(--text2)}
+
+.note{font-size:.8rem;color:var(--text2);background:var(--bg3);border-left:3px solid var(--yellow);padding:var(--s3) var(--s4);border-radius:var(--r-sm);margin:var(--s3) 0;line-height:1.5}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand">
+    <span class="logo">◈</span>
+    <span class="tab">Wallet</span>
+    <span style="color:var(--border);margin:0 4px">/</span>
+    <span class="tab">Flow</span>
+    <span style="color:var(--border);margin:0 4px">/</span>
+    <span class="tab active">Simulate</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" title="Close">✕</button>
+</div>
+
+<div class="page">
+
+  <button class="backlink" onclick="history.back()">← Flow velocity</button>
+
+  <div class="ph">
+    <h1>Simulate a flow epoch</h1>
+    <p class="sub">Run a FlowPolicy variant over a synthetic or historical scenario and watch the epoch play out — before committing any real value. Changes here do not affect your live policy.</p>
+  </div>
+
+  <div class="sim-banner">
+    <span class="sb-icon">⊕</span>
+    <span><strong>Simulation mode.</strong> Nothing here affects your live ledger or real flow agreements. Use this to experiment with demurrage, gradient shapes, and different income scenarios before committing.</span>
+  </div>
+
+  <div class="sim-layout">
+
+    <!-- ══ CONTROLS ══ -->
+    <div class="ctrl-panel">
+
+      <div class="ctrl-head">Policy variant</div>
+      <div class="variant-toggle">
+        <div class="variant-btn on" onclick="selectVariant(this,'current')">Current policy</div>
+        <div class="variant-btn" onclick="selectVariant(this,'modified')">Modified</div>
+        <div class="variant-btn" onclick="selectVariant(this,'saved')">Saved draft</div>
+      </div>
+
+      <!-- modified variant diff (shown when "Modified" selected) -->
+      <div class="variant-diff hidden" id="variantDiff">
+        <div style="font-weight:600;margin-bottom:4px;font-size:.76rem;color:var(--text2)">Changes from current:</div>
+        <div class="vd-row"><span>Floor</span><span>$7,000 → <span class="vd-changed">$6,000</span></span></div>
+        <div class="vd-row"><span>Ceiling</span><span>$15,000 → <span class="vd-changed">$13,000</span></span></div>
+        <div class="vd-row"><span>Demurrage</span><span>Off → <span class="vd-changed">2%/month</span></span></div>
+        <div class="vd-row"><span>Gradient</span><span>Generous early → <span class="vd-changed">Linear</span></span></div>
+      </div>
+
+      <!-- floor/ceiling for this sim -->
+      <div class="field">
+        <label>Floor (this simulation)</label>
+        <input class="ctl" type="number" value="7000" id="simFloor"/>
+      </div>
+      <div class="field">
+        <label>Ceiling (this simulation)</label>
+        <input class="ctl" type="number" value="15000" id="simCeiling"/>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:var(--s3) 0"></div>
+      <div class="ctrl-head">Epoch</div>
+
+      <div class="field">
+        <label>Duration</label>
+        <select class="ctl" id="simDuration">
+          <option>3 months</option>
+          <option>6 months</option>
+          <option>1 year</option>
+          <option>Custom…</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Scenario</label>
+        <select class="ctl" id="simScenario" onchange="updateScenarioDesc()">
+          <option value="steady">Steady income ($12K/month)</option>
+          <option value="volatile">Volatile — dip in month 2 ($4.5K)</option>
+          <option value="growth">Growing revenue (contract kicks in)</option>
+          <option value="hard">Hard year — below floor most months</option>
+          <option value="historical">Your last 6 months (historical)</option>
+        </select>
+        <div class="help" id="scenarioDesc">A stable income stream — no floor/ceiling crossings. Good baseline for comparing gradient curves.</div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:var(--s3) 0"></div>
+      <div class="ctrl-head">Mechanism overrides</div>
+
+      <div class="mech-override">
+        <span class="mo-name">Gradient outflow</span>
+        <span class="mo-badge mb-live">Live</span>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="mech-override">
+        <span class="mo-name">Activity-decay</span>
+        <span class="mo-badge mb-live">Live</span>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="mech-override">
+        <span class="mo-name">Demurrage</span>
+        <span class="mo-badge mb-sim" id="demurrageBadge">Sim only</span>
+        <div class="toggle" id="demurrageToggle" onclick="this.classList.toggle('on');updateDemurrageRate()"></div>
+      </div>
+      <div style="padding:6px 0;display:flex;align-items:center;gap:8px" id="demurrageRateRow">
+        <span style="font-size:.78rem;color:var(--text3);flex:1">Rate:</span>
+        <input type="range" min="0" max="5" step="0.5" value="2" style="flex:2" oninput="document.getElementById('demurrageRateVal').textContent=this.value+'%'"/>
+        <span style="font-variant-numeric:tabular-nums;font-size:.8rem;min-width:28px" id="demurrageRateVal">2%</span>
+      </div>
+
+      <button class="run-btn" id="runBtn" onclick="runSimulation()">⊕ Run simulation</button>
+
+    </div>
+
+    <!-- ══ RESULTS ══ -->
+    <div class="results-panel">
+
+      <!-- initial prompt -->
+      <div id="promptState" style="text-align:center;padding:var(--s6) var(--s4)">
+        <div style="font-size:2.4rem;opacity:.5;margin-bottom:var(--s3)">⊕</div>
+        <div style="font-weight:600;font-size:1.1rem;margin-bottom:var(--s2)">Configure and run a simulation</div>
+        <div style="font-size:.9rem;color:var(--text2);max-width:380px;margin:0 auto">Choose a policy variant, scenario, and epoch length, then hit "Run simulation" to see how the epoch plays out before committing real value.</div>
+      </div>
+
+      <!-- results (hidden until run) -->
+      <div id="resultsState" class="hidden">
+
+        <!-- epoch summary cards -->
+        <div class="epoch-cards">
+          <div class="epoch-card ec-surplus">
+            <div class="ec-label">Surplus periods</div>
+            <div class="ec-val" id="surplusPeriods">2</div>
+            <div class="ec-sub">out of 3 months</div>
+          </div>
+          <div class="epoch-card ec-deficit">
+            <div class="ec-label">Deficit periods</div>
+            <div class="ec-val" id="deficitPeriods">1</div>
+            <div class="ec-sub" id="deficitSub">month 2 — deepest: −$2,500</div>
+          </div>
+          <div class="epoch-card ec-neutral">
+            <div class="ec-label">Total outflow</div>
+            <div class="ec-val" id="totalOutflow">$4,280</div>
+            <div class="ec-sub">flowed to network</div>
+          </div>
+        </div>
+
+        <!-- balance trajectory chart -->
+        <div class="comparison-chart">
+          <div class="cc-head">Balance trajectory — current policy vs. modified (with demurrage)</div>
+          <div class="cc-chart" id="compChart">
+            <!-- Month 1 group -->
+            <div class="cc-group">
+              <div class="cc-bar" style="height:72%;background:var(--accent);opacity:.8" title="Month 1 · current"></div>
+              <div class="cc-bar" style="height:65%;background:var(--yellow);opacity:.7" title="Month 1 · +demurrage"></div>
+            </div>
+            <!-- Month 2 group (deficit) -->
+            <div class="cc-group">
+              <div class="cc-bar" style="height:22%;background:var(--red);opacity:.8" title="Month 2 · current (deficit)"></div>
+              <div class="cc-bar" style="height:18%;background:var(--red);opacity:.6" title="Month 2 · +demurrage (deeper deficit)"></div>
+            </div>
+            <!-- Month 3 group -->
+            <div class="cc-group">
+              <div class="cc-bar" style="height:60%;background:var(--accent);opacity:.8" title="Month 3 · current"></div>
+              <div class="cc-bar" style="height:52%;background:var(--yellow);opacity:.7" title="Month 3 · +demurrage (lower due to decay)"></div>
+            </div>
+          </div>
+          <div class="cc-labels"><span>Month 1</span><span>Month 2</span><span>Month 3</span></div>
+          <div class="cc-legend">
+            <span><span class="dot" style="background:var(--accent)"></span>Current policy</span>
+            <span><span class="dot" style="background:var(--yellow)"></span>Modified (+demurrage 2%/mo)</span>
+          </div>
+          <div class="note" style="margin-top:var(--s3)">Demurrage deepens the month-2 deficit by ~$220 (2% on idle balance). In months where you are above ceiling, it encourages outflow rather than accumulation — consistent with the protocol's intent. In the deficit month, the effect is negative. Consider whether this tradeoff serves your network.</div>
+        </div>
+
+        <!-- period table -->
+        <div class="period-table">
+          <div class="pt-head">
+            <span>Period</span>
+            <span class="num">Balance in</span>
+            <span class="num">Flows out</span>
+            <span class="num hide-mobile">Demurrage</span>
+            <span class="num">Net balance</span>
+            <span>State</span>
+          </div>
+          <div class="pt-row">
+            <span>Month 1</span>
+            <span class="num pos">+$12,400</span>
+            <span class="num pos">−$1,480</span>
+            <span class="num demurrage-col hide-mobile">−$248</span>
+            <span class="num neutral">$10,672</span>
+            <span><span class="period-badge pb-balanced">Gradient</span></span>
+          </div>
+          <div class="pt-row">
+            <span>Month 2</span>
+            <span class="num neg">+$4,500</span>
+            <span class="num" style="color:var(--text3)">$0 (paused)</span>
+            <span class="num" style="color:var(--text3)" class="hide-mobile">$0</span>
+            <span class="num neg">−$2,500</span>
+            <span><span class="period-badge pb-deficit">In deficit</span></span>
+          </div>
+          <div class="pt-row">
+            <span>Month 3</span>
+            <span class="num pos">+$13,800</span>
+            <span class="num pos">−$2,800</span>
+            <span class="num demurrage-col hide-mobile">−$276</span>
+            <span class="num neutral">$8,224</span>
+            <span><span class="period-badge pb-surplus">My cup is full</span></span>
+          </div>
+        </div>
+
+        <!-- event timeline -->
+        <div class="timeline">
+          <div class="timeline-head">Flow event timeline</div>
+
+          <div class="tl-row">
+            <div class="tl-dot surplus"></div>
+            <div class="tl-body">
+              <div class="tl-title">Gradient outflow began</div>
+              <div class="tl-desc">Balance crossed floor ($7K) on day 3. Outflow started at gradient rate — 6% of surplus toward trust channels.</div>
+            </div>
+            <div style="text-align:right">
+              <div class="tl-amount" style="color:var(--green)">−$1,480</div>
+              <div class="tl-when">Month 1, day 3</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-dot deficit"></div>
+            <div class="tl-body">
+              <div class="tl-title">Entered deficit — outflow paused</div>
+              <div class="tl-desc">Income dropped to $4,500 — below floor ($7,000). Gradient outflow automatically paused. Pool draw-in began from AWIP buffer pool.</div>
+            </div>
+            <div style="text-align:right">
+              <div class="tl-amount" style="color:var(--yellow)">Draw: +$800</div>
+              <div class="tl-when">Month 2, day 1</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-dot demurrage"></div>
+            <div class="tl-body">
+              <div class="tl-title">Demurrage applied <span style="font-size:.7rem;color:var(--yellow);font-weight:700;border:1px solid var(--yellow);padding:1px 6px;border-radius:var(--r-full);margin-left:4px">Simulation only — not live</span></div>
+              <div class="tl-desc">2%/month decay on idle balances. Month 1 idle balance: $10,672 → projected decay of $248 if demurrage were live. This would deepen the month-2 deficit by $220.</div>
+            </div>
+            <div style="text-align:right">
+              <div class="tl-amount" style="color:var(--yellow)">−$248 (sim)</div>
+              <div class="tl-when">Month 1 → 2 transition</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-dot surplus"></div>
+            <div class="tl-body">
+              <div class="tl-title">Recovery — above ceiling</div>
+              <div class="tl-desc">Income recovered to $13,800 — above ceiling ($15,000 → $13,800 exceeds ceiling in modified variant). Full gradient outflow resumed; $2,800 flowed to network including Watershed hive.</div>
+            </div>
+            <div style="text-align:right">
+              <div class="tl-amount" style="color:var(--green)">−$2,800</div>
+              <div class="tl-when">Month 3, day 1</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-dot flow"></div>
+            <div class="tl-body">
+              <div class="tl-title">Cascade — @jay flowed to @michael</div>
+              <div class="tl-desc">$740 flowed from you to @jay in month 1; @jay's outflow sent ~$240 onward to @michael (below floor this month). The protocol kept value moving.</div>
+            </div>
+            <div style="text-align:right">
+              <div class="tl-amount" style="color:var(--accent)">+$240 → Michael</div>
+              <div class="tl-when">Month 1</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- commit CTA -->
+        <div class="commit-card">
+          <div class="commit-body">
+            <h3>This policy variant looks healthy</h3>
+            <p>2 surplus periods, 1 deficit period, total outflow $4,280. The demurrage simulation shows a tradeoff you should understand before arming it live — deepens deficits slightly but encourages surplus circulation. The current policy (no live demurrage) is the safer default for this network profile.</p>
+          </div>
+          <div class="commit-actions">
+            <button class="btn p" onclick="alert('Save simulation as comparison baseline')">Save as baseline</button>
+            <button class="btn" onclick="alert('Open FlowPolicy config with these settings pre-filled')">Apply to live policy</button>
+            <button class="btn" onclick="alert('Run another variant')">Try another variant</button>
+          </div>
+        </div>
+
+      </div><!-- /resultsState -->
+    </div><!-- /results-panel -->
+
+  </div><!-- /sim-layout -->
+
+</div><!-- /page -->
+
+<script>
+const SCENARIO_DESCS={
+  steady:'A stable income stream — no floor/ceiling crossings. Good baseline for comparing gradient curves.',
+  volatile:'Income dips sharply in month 2 ($4.5K — below floor). Tests deficit behaviour, pool draw-in, and recovery.',
+  growth:'Revenue grows month-over-month as a new contract kicks in. Tests ceiling crossing and surplus outflow ramp.',
+  hard:'Below floor most months — tests pool resilience, trust-channel draw-in, and floor adequacy.',
+  historical:'Your actual last 6 months — real events, real amounts (anonymised for display). Most honest test of your policy.'
+};
+
+function updateScenarioDesc(){
+  const v=document.getElementById('simScenario').value;
+  document.getElementById('scenarioDesc').textContent=SCENARIO_DESCS[v]||'';
+}
+
+function selectVariant(el,id){
+  document.querySelectorAll('.variant-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('variantDiff').classList.toggle('hidden',id!=='modified');
+}
+
+function updateDemurrageRate(){
+  // nothing stateful — just visual
+}
+
+let simRunning=false;
+function runSimulation(){
+  if(simRunning)return;
+  const btn=document.getElementById('runBtn');
+  btn.textContent='Running…';
+  btn.classList.add('running');
+  simRunning=true;
+  setTimeout(()=>{
+    btn.textContent='⊕ Run simulation';
+    btn.classList.remove('running');
+    simRunning=false;
+    document.getElementById('promptState').classList.add('hidden');
+    document.getElementById('resultsState').classList.remove('hidden');
+  },900);
+}
+</script>
+</body>
+</html>

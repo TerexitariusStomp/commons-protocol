@@ -65,3 +65,42 @@ CREATE TABLE IF NOT EXISTS artifacts (
   total_supply TEXT,
   first_block INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS flow_policies (
+  node TEXT PRIMARY KEY,        -- graph node id (project/fund/person slug)
+  address TEXT,                 -- on-chain account the band watches
+  floor REAL NOT NULL,
+  ceiling REAL NOT NULL,
+  gradient REAL DEFAULT 0,      -- 0 hard switch .. 1 smooth ramp
+  per_claimant_cap REAL DEFAULT 0.34,
+  per_epoch_cap REAL DEFAULT 0.10,
+  denomination TEXT DEFAULT 'stable',
+  enabled INTEGER DEFAULT 1,
+  created_at INTEGER, updated_at INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS flow_agreements (
+  id TEXT PRIMARY KEY,
+  from_node TEXT NOT NULL,
+  to_node TEXT NOT NULL,
+  trust_weight REAL DEFAULT 1,
+  formality REAL DEFAULT 0,     -- 0 relational .. 1 codified
+  tier TEXT DEFAULT 'relational', -- relational|channel|revenue-share|contract
+  share_pct REAL,
+  expires_at INTEGER,
+  status TEXT DEFAULT 'proposed',  -- proposed|active|revoked (bilateral accept)
+  proposer_sig TEXT, accepter_sig TEXT,
+  created_at INTEGER, updated_at INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS flow_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  epoch INTEGER NOT NULL,
+  from_node TEXT NOT NULL,
+  to_node TEXT NOT NULL,
+  amount REAL NOT NULL,
+  status TEXT DEFAULT 'computed', -- computed|settled|refused|attested
+  tx TEXT, eas_uid TEXT,
+  created_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_flow_events_epoch ON flow_events(epoch);

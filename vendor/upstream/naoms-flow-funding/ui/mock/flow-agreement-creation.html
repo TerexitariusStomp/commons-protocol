@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Flow Agreement — Create (1644 mock)</title>
+<style>
+/* ── 1627 wallet design tokens (verbatim from 1627 mockup/index.html) ── */
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;
+  --text:#c9d1d9;--text2:#8b949e;--text3:#8b939d;
+  --accent:#58a6ff;--accent-h:#79b8ff;--accent-mut:rgba(88,166,255,.15);
+  --green:#3fb950;--green-mut:rgba(63,185,80,.15);
+  --red:#f85149;--red-mut:rgba(248,81,73,.15);
+  --yellow:#d29922;--yellow-mut:rgba(210,153,34,.15);--purple:#d2a8ff;
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.5rem;--s6:2rem;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-full:9999px;
+  --ff:system-ui,-apple-system,sans-serif;--mono:"SF Mono","Fira Code",monospace;
+  --shadow:0 8px 24px rgba(0,0,0,.5);--header-h:56px;
+  /* flow-funding accent (complements wallet accent) */
+  --flow:#a5d6a7;--flow-mut:rgba(165,214,167,.15);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ff);font-size:15px;line-height:1.5}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+/* appbar — identical to 1627 */
+.appbar{position:sticky;top:0;z-index:20;height:var(--header-h);display:flex;align-items:center;gap:var(--s3);
+  padding:0 var(--s4);background:var(--bg2);border-bottom:1px solid var(--border)}
+.brand{font-weight:600;display:flex;align-items:center;gap:8px}
+.brand .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;color:#0d1117;font-weight:700}
+.brand .tab{color:var(--text2);font-size:.9rem}
+.brand .tab.active{color:var(--accent)}
+.spacer{flex:1}
+.iconbtn{width:38px;height:38px;border-radius:var(--r-md);border:1px solid transparent;background:transparent;color:var(--text2);font-size:1.1rem;display:grid;place-items:center}
+.iconbtn:hover{background:var(--bg3);color:var(--text)}
+
+/* page shell */
+.page{max-width:640px;margin:0 auto;padding:var(--s5) var(--s4) 80px}
+.backlink{display:inline-flex;align-items:center;gap:6px;color:var(--accent);cursor:pointer;font-size:.85rem;margin-bottom:var(--s4);background:none;border:none;padding:0}
+.ph{margin-bottom:var(--s5)}
+.ph h1{font-size:1.4rem;font-weight:700;margin:0 0 4px}
+.ph .sub{color:var(--text2);font-size:.9rem;margin:0}
+
+/* ── Formality dial — the hero ── */
+.dial-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--s5);margin-bottom:var(--s4)}
+.dial-labels{display:flex;justify-content:space-between;margin-bottom:var(--s3)}
+.dial-label{font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text2)}
+.dial-label.active{color:var(--accent)}
+.dial-desc{display:flex;justify-content:space-between;margin-top:var(--s2);gap:var(--s4)}
+.dial-desc p{font-size:.78rem;color:var(--text3);margin:0;flex:1;line-height:1.4}
+.dial-desc p:last-child{text-align:right}
+
+/* Custom range slider */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:6px;
+  border-radius:var(--r-full);outline:none;cursor:pointer;
+  background:linear-gradient(90deg, var(--accent-mut) 0%, var(--accent) var(--val,40%), var(--bg3) var(--val,40%), var(--bg3) 100%);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;border-radius:var(--r-full);
+  background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--accent);
+}
+input[type=range]::-moz-range-thumb{
+  width:22px;height:22px;border-radius:var(--r-full);border:3px solid var(--bg);
+  background:var(--accent);box-shadow:0 0 0 2px var(--accent);
+}
+
+/* dial position badges */
+.dial-position{margin-top:var(--s3);text-align:center}
+.dial-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:var(--r-full);background:var(--accent-mut);border:1px solid var(--accent);color:var(--accent);font-size:.8rem;font-weight:600}
+
+/* form sections */
+.sect{margin-bottom:var(--s4)}
+.sect-head{font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:var(--s2)}
+.field{margin:var(--s3) 0}
+.field label{display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:500}
+.field .ctl{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;color:var(--text);font-size:.95rem}
+.field .ctl:focus{outline:none;border-color:var(--accent)}
+.field .ctl::placeholder{color:var(--text3)}
+.field .help{font-size:.72rem;color:var(--text3);margin-top:4px;line-height:1.4}
+.frow{display:flex;gap:12px}
+.frow>.field{flex:1;margin-top:0}
+@media(max-width:480px){.frow{flex-direction:column;gap:0}}
+
+/* segmented toggle (1627 pattern) */
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:9px 8px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-weight:600;font-size:.82rem;transition:all .12s}
+.seg button.on{background:var(--accent-mut);border-color:var(--accent);color:var(--accent)}
+.seg button:hover:not(.on){border-color:var(--text2)}
+
+/* party row (contacts) */
+.party-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:8px}
+.party-avatar{width:32px;height:32px;border-radius:var(--r-full);background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;font-size:.8rem;font-weight:700;color:#0d1117;flex:0 0 auto}
+.party-name{font-weight:600;font-size:.9rem;flex:1}
+.party-meta{font-size:.74rem;color:var(--text2)}
+.party-add{width:100%;padding:10px;background:none;border:1px dashed var(--border);border-radius:var(--r-md);color:var(--text2);font-size:.85rem;font-weight:500;transition:border-color .12s}
+.party-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* split rows (revenue-share breakdown) */
+.split-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.split-row:last-child{border-bottom:none}
+.split-row .sname{flex:1;font-size:.9rem}
+.split-row .spct{width:80px}
+.split-row .spct .ctl{text-align:right;padding:6px 10px}
+.split-bar{height:4px;background:var(--bg3);border-radius:var(--r-full);margin-top:var(--s2);overflow:hidden;position:relative}
+.split-bar .fill{height:100%;background:var(--accent);border-radius:var(--r-full);transition:width .3s}
+.split-total{display:flex;justify-content:space-between;align-items:center;margin-top:var(--s2);font-size:.78rem}
+.split-total .ok{color:var(--green);font-weight:600}
+.split-total .over{color:var(--red);font-weight:600}
+
+/* tier selector */
+.tier-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tier-opt{padding:10px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg3);text-align:center;cursor:pointer;transition:all .12s}
+.tier-opt:hover{border-color:var(--text2)}
+.tier-opt.on{border-color:var(--accent);background:var(--accent-mut)}
+.tier-opt .ico{font-size:1.2rem;margin-bottom:4px}
+.tier-opt .nm{font-size:.8rem;font-weight:600;color:var(--text)}
+.tier-opt .ds{font-size:.68rem;color:var(--text2);margin-top:2px;line-height:1.3}
+
+/* optional IOU section */
+.iou-toggle{display:flex;align-items:center;gap:10px;padding:var(--s3) var(--s4);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer}
+.iou-toggle .label{flex:1;font-size:.88rem;font-weight:500}
+.iou-toggle .toggle{width:36px;height:20px;border-radius:var(--r-full);background:var(--bg);border:1px solid var(--border);position:relative;transition:background .15s}
+.iou-toggle .toggle.on{background:var(--accent)}
+.iou-toggle .toggle::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:var(--r-full);background:#fff;transition:transform .15s}
+.iou-toggle .toggle.on::after{transform:translateX(16px)}
+.iou-body{padding:var(--s3) var(--s4);background:var(--bg3);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);margin-top:-8px}
+
+/* duration */
+.dur-seg{display:flex;gap:6px;flex-wrap:wrap}
+.dur-seg button{padding:7px 12px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-weight:600;font-size:.8rem}
+.dur-seg button.on{background:var(--accent-mut);border-color:var(--accent);color:var(--accent)}
+
+/* transparency */
+.transp-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:12px}
+.transp-row:last-child{border-bottom:none}
+.transp-row .tr-label{font-size:.88rem;flex:1}
+.transp-row .tr-sub{font-size:.72rem;color:var(--text2);margin-top:2px}
+.transp-row input[type=radio]{accent-color:var(--accent)}
+
+/* simulation preview banner */
+.sim-preview{background:var(--flow-mut);border:1px solid var(--flow);border-radius:var(--r-lg);padding:var(--s4);margin-bottom:var(--s4)}
+.sim-preview .sp-head{color:var(--flow);font-weight:600;font-size:.85rem;margin-bottom:var(--s2);display:flex;align-items:center;gap:6px}
+.sim-preview .sp-row{display:flex;justify-content:space-between;font-size:.82rem;padding:4px 0;border-bottom:1px solid rgba(165,214,167,.15)}
+.sim-preview .sp-row:last-child{border-bottom:none}
+.sim-preview .sp-row .val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--flow)}
+
+/* action buttons */
+.btn{padding:10px 18px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-weight:600;font-size:.9rem;transition:filter .12s}
+.btn.p{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+.btn.p:hover{filter:brightness(1.1)}
+.btn:hover{border-color:var(--text2)}
+.btnrow{display:flex;gap:10px;margin-top:var(--s5)}
+.btnrow .btn{flex:1;text-align:center;padding:12px}
+
+/* note / callout */
+.note{font-size:.8rem;color:var(--text2);background:var(--bg3);border-left:3px solid var(--accent);padding:var(--s3) var(--s4);border-radius:var(--r-sm);margin:var(--s3) 0;line-height:1.5}
+.note.warn{border-left-color:var(--yellow)}
+
+/* section divider */
+.divider{height:1px;background:var(--border);margin:var(--s5) 0}
+
+/* hidden helper */
+.hidden{display:none!important}
+
+/* relational-only fields */
+.relational-fields{}
+.contract-fields{}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand">
+    <span class="logo">◈</span>
+    <span class="tab">Wallet</span>
+    <span style="color:var(--border);margin:0 4px">/</span>
+    <span class="tab active">Flow</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" title="Close">✕</button>
+</div>
+
+<div class="page">
+
+  <button class="backlink" onclick="history.back()">← Flow agreements</button>
+
+  <div class="ph">
+    <h1>New flow agreement</h1>
+    <p class="sub">A flow agreement sets how value moves between you and someone in your network — from a light relational channel to a codified revenue-share contract.</p>
+  </div>
+
+  <!-- ══ FORMALITY DIAL ══ -->
+  <div class="dial-wrap">
+    <div class="dial-labels">
+      <span class="dial-label active" id="lbl-relational">Relational</span>
+      <span class="dial-label" id="lbl-contract">Contract</span>
+    </div>
+    <input type="range" id="formalityDial" min="0" max="100" value="30"
+      style="--val:30%"
+      oninput="onDial(this.value)"/>
+    <div class="dial-position">
+      <span class="dial-badge" id="dialBadge">Trust-weight channel</span>
+    </div>
+    <div class="dial-desc">
+      <p>A lightweight channel — channel width sets how much can flow; no formal terms required. Good for ongoing mutual support.</p>
+      <p>A codified agreement — parties, %, revenue source, duration, and optional IOU. Executes exactly what was negotiated.</p>
+    </div>
+  </div>
+
+  <!-- ══ PARTIES ══ -->
+  <div class="sect">
+    <div class="sect-head">Parties</div>
+    <div class="party-row">
+      <div class="party-avatar">T</div>
+      <div>
+        <div class="party-name">You</div>
+        <div class="party-meta">Initiating party</div>
+      </div>
+    </div>
+    <div class="party-row">
+      <div class="party-avatar" style="background:linear-gradient(135deg,var(--green),var(--flow))">J</div>
+      <div>
+        <div class="party-name">@jay</div>
+        <div class="party-meta">Recipient · NAO core team</div>
+      </div>
+      <button class="iconbtn" title="Remove">✕</button>
+    </div>
+    <button class="party-add" id="addPartyBtn">+ Add another party</button>
+  </div>
+
+  <!-- ══ RELATIONAL FIELDS (shown when dial < 60) ══ -->
+  <div class="relational-fields" id="relationalFields">
+    <div class="sect">
+      <div class="sect-head">Channel</div>
+      <div class="field">
+        <label>Channel width — maximum flow per period</label>
+        <div class="frow">
+          <div class="field">
+            <input class="ctl" type="number" value="500" placeholder="Max amount"/>
+          </div>
+          <div class="field">
+            <select class="ctl">
+              <option>per month</option>
+              <option>per week</option>
+              <option>per year</option>
+            </select>
+          </div>
+          <div class="field">
+            <select class="ctl">
+              <option>NAO hours</option>
+              <option>kudos</option>
+              <option>USD</option>
+            </select>
+          </div>
+        </div>
+        <div class="help">Flow only moves when you are above your ceiling. This is the maximum that can flow per period — actual flow may be less depending on gradient position.</div>
+      </div>
+      <div class="field">
+        <label>Note (optional)</label>
+        <textarea class="ctl" rows="2" placeholder="What's this channel for? E.g. 'Ongoing support for Jay's work on NAO core'"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONTRACT FIELDS (shown when dial >= 60) ══ -->
+  <div class="contract-fields hidden" id="contractFields">
+
+    <div class="sect">
+      <div class="sect-head">Revenue source</div>
+      <div class="field">
+        <label>Which revenue stream does this agreement apply to?</label>
+        <select class="ctl">
+          <option>NAO — all revenue</option>
+          <option>Care Circles — franchise fees</option>
+          <option>ReWoven — season 1 revenue</option>
+          <option>Custom revenue source…</option>
+        </select>
+        <div class="help">The agreement executes as a percentage of this stream. If "all revenue" is selected, the % applies to gross receipts before other deductions.</div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <div class="sect-head">Revenue split</div>
+      <div class="split-row">
+        <span class="sname">@jay</span>
+        <div class="spct"><input class="ctl" type="number" value="2" min="0" max="100" oninput="updateSplit()"/> %</div>
+      </div>
+      <div class="split-row" id="splitRow2" style="display:none">
+        <span class="sname">@alex</span>
+        <div class="spct"><input class="ctl" type="number" value="1.5" min="0" max="100" oninput="updateSplit()"/> %</div>
+      </div>
+      <div class="split-bar"><div class="fill" id="splitFill" style="width:2%"></div></div>
+      <div class="split-total">
+        <span style="color:var(--text2)">Total allocated</span>
+        <span class="ok" id="splitTotalLabel">2 % of NAO revenue</span>
+      </div>
+      <div class="note" style="margin-top:var(--s3)">The remaining 98% flows according to your other agreements and FlowPolicy settings. Percentages stack — ensure the total across all agreements stays within your intended ceiling.</div>
+    </div>
+
+    <div class="sect">
+      <div class="sect-head">Contributor tier</div>
+      <div class="tier-grid">
+        <div class="tier-opt on" onclick="selectTier(this)">
+          <div class="ico">🌱</div>
+          <div class="nm">Founding</div>
+          <div class="ds">No expiration; permanent share for life of the org</div>
+        </div>
+        <div class="tier-opt" onclick="selectTier(this)">
+          <div class="ico">⚡</div>
+          <div class="nm">Active</div>
+          <div class="ds">Flows while active; diminishes on departure</div>
+        </div>
+        <div class="tier-opt" onclick="selectTier(this)">
+          <div class="ico">📅</div>
+          <div class="nm">Time-limited</div>
+          <div class="ds">Contract defines the exact expiry and amount</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <div class="sect-head">Duration</div>
+      <div class="dur-seg" id="durSeg">
+        <button class="on" onclick="selectDur(this,'none')">No expiry</button>
+        <button onclick="selectDur(this,'1y')">1 year</button>
+        <button onclick="selectDur(this,'2y')">2 years</button>
+        <button onclick="selectDur(this,'custom')">Custom</button>
+      </div>
+      <div class="field hidden" id="customDurField">
+        <label>Expiry date</label>
+        <input class="ctl" type="date"/>
+      </div>
+    </div>
+
+    <!-- IOU toggle -->
+    <div class="sect">
+      <div class="sect-head">IOU (optional)</div>
+      <div class="iou-toggle" onclick="toggleIOU()">
+        <span class="label">This agreement repays an IOU</span>
+        <div class="toggle" id="iouToggle"></div>
+      </div>
+      <div class="iou-body hidden" id="iouBody">
+        <div class="frow" style="margin-top:var(--s2)">
+          <div class="field">
+            <label>Outstanding amount</label>
+            <input class="ctl" type="number" placeholder="e.g. 20000"/>
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select class="ctl"><option>USD</option><option>NAO hours</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Repayment cap per period</label>
+          <input class="ctl" type="number" placeholder="e.g. 2 % of revenue until cleared"/>
+        </div>
+        <div class="help">Once the IOU is fully repaid, this agreement transitions to the revenue-share terms above (or ends if the tier is time-limited).</div>
+      </div>
+    </div>
+
+  </div><!-- /contract-fields -->
+
+  <!-- ══ TRANSPARENCY (both modes) ══ -->
+  <div class="sect">
+    <div class="sect-head">Transparency</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:0 var(--s4)">
+      <div class="transp-row">
+        <div>
+          <div class="tr-label">Outcome-transparent</div>
+          <div class="tr-sub">Network sees that value flowed and its purpose — not exact amounts</div>
+        </div>
+        <input type="radio" name="transp" value="outcome" checked/>
+      </div>
+      <div class="transp-row">
+        <div>
+          <div class="tr-label">Fully transparent</div>
+          <div class="tr-sub">All participants see exact amounts, timing, and terms</div>
+        </div>
+        <input type="radio" name="transp" value="full"/>
+      </div>
+      <div class="transp-row">
+        <div>
+          <div class="tr-label">Private</div>
+          <div class="tr-sub">Only the parties to this agreement see details</div>
+        </div>
+        <input type="radio" name="transp" value="private"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══ SIMULATION PREVIEW ══ -->
+  <div class="sim-preview">
+    <div class="sp-head">⊕ Preview — how this agreement would have executed (last 3 months)</div>
+    <div class="sp-row"><span>Period 1 (Apr)</span><span class="val">+ 340 NAO hours → @jay</span></div>
+    <div class="sp-row"><span>Period 2 (May)</span><span class="val">+ 420 NAO hours → @jay</span></div>
+    <div class="sp-row"><span>Period 3 (Jun)</span><span class="val">+ 0 (you were in deficit)</span></div>
+    <div style="margin-top:var(--s3);font-size:.78rem;color:var(--text3)">Based on your current FlowPolicy and recent flow history. Open the simulation surface to explore different scenarios before committing.</div>
+  </div>
+
+  <div class="note warn">Both parties must confirm this agreement before it takes effect. @jay will receive a notification to review and co-sign.</div>
+
+  <div class="btnrow">
+    <button class="btn">Cancel</button>
+    <button class="btn p" onclick="handleCreate()">Create agreement &amp; notify @jay</button>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+const DIAL_POSITIONS=[
+  {max:20, label:"Trust-weight channel"},
+  {max:45, label:"Relational flow channel"},
+  {max:65, label:"Hybrid agreement"},
+  {max:80, label:"Codified share"},
+  {max:100, label:"Revenue-share contract"},
+];
+
+function onDial(v){
+  const pct=parseInt(v,10);
+  // update CSS fill
+  document.getElementById('formalityDial').style.setProperty('--val', pct+'%');
+  // update badge
+  const pos=DIAL_POSITIONS.find(p=>pct<=p.max)||DIAL_POSITIONS[DIAL_POSITIONS.length-1];
+  document.getElementById('dialBadge').textContent=pos.label;
+  // toggle labels
+  document.getElementById('lbl-relational').classList.toggle('active', pct<50);
+  document.getElementById('lbl-contract').classList.toggle('active', pct>=50);
+  // show/hide field sections
+  const isContract=pct>=60;
+  document.getElementById('relationalFields').classList.toggle('hidden', isContract);
+  document.getElementById('contractFields').classList.toggle('hidden', !isContract);
+}
+
+function selectTier(el){
+  document.querySelectorAll('.tier-opt').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+}
+function selectDur(el, val){
+  document.querySelectorAll('#durSeg button').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('customDurField').classList.toggle('hidden', val!=='custom');
+}
+function toggleIOU(){
+  const t=document.getElementById('iouToggle');
+  const b=document.getElementById('iouBody');
+  t.classList.toggle('on');
+  b.classList.toggle('hidden');
+}
+function updateSplit(){
+  const inputs=[...document.querySelectorAll('.spct input')].map(i=>parseFloat(i.value)||0);
+  const total=inputs.reduce((a,b)=>a+b,0);
+  document.getElementById('splitFill').style.width=Math.min(total,100)+'%';
+  document.getElementById('splitTotalLabel').textContent=total.toFixed(1)+' % of NAO revenue';
+  document.getElementById('splitTotalLabel').className=total>100?'over':'ok';
+}
+function handleCreate(){
+  document.getElementById('formalityDial').value;
+  alert('Agreement created. A co-sign request has been sent to @jay. The agreement will activate once both parties confirm.');
+}
+</script>
+</body>
+</html>

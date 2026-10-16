@@ -8,7 +8,7 @@
     "workers/*"
   ],
   "overrides": {
-    "@metamask/sdk": "file:vendor/metamask-sdk-stub"
+    "@metamask/sdk": "npm:empty-npm-package@1.0.0"
   },
   "scripts": {
     "build:contracts": "cd contracts && forge build",
