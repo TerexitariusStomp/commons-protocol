@@ -19,6 +19,7 @@ const schema = buildSchema(readFileSync());
 
 const conn = (nodes: any[], hasNext = false) => ({
   nodes,
+  totalCount: nodes.length,
   pageInfo: { hasNextPage: hasNext, hasPreviousPage: false },
 });
 
@@ -51,7 +52,9 @@ function toCollection(row: any) {
     cover: row.cover ?? null,
     description: row.description ?? null,
     standard: row.standard ?? "ERC1155",
-    deployerAddress: row.deployer ?? null,
+    deployerAddress: row.deployer ?? "0x0000000000000000000000000000000000000000",
+    deployer: { address: row.deployer ?? "0x0000000000000000000000000000000000000000" },
+    numberOfOwners: row.total_owners ?? 0,
     mintType: "PUBLIC",
     totalVolume: { refCode: "USD", valueInRef: row.volume_ref ?? "0" },
     floorPrice: row.floor_price
@@ -150,6 +153,7 @@ async function bestOffer(assetRow: any, poolType: number, ctx: Ctx) {
 function toOwnership(row: any) {
   return {
     ownerAddress: row.owner_address,
+    owner: { address: row.owner_address ?? "0x0000000000000000000000000000000000000000" },
     quantity: row.quantity,
     asset: { chainId: row.chain_id, collectionAddress: row.collection_address, tokenId: row.token_id },
   };
@@ -186,12 +190,17 @@ function toOffer(row: any, ctx: Ctx) {
 }
 
 function toTrade(row: any) {
+  const ZERO = "0x0000000000000000000000000000000000000000";
+  const buyer = row.buyer ?? ZERO;
+  const seller = row.seller ?? ZERO;
   return {
     quantity: row.nft_count ?? "0",
-    buyerAddress: row.buyer ?? "",
-    transactionHash: row.tx,
+    buyerAddress: buyer,
+    buyer: { address: buyer },
+    transactionHash: row.tx ?? "0x",
     timestamp: new Date((row.ts ?? 0) * 1000),
-    sellerAddress: row.seller ?? "",
+    sellerAddress: seller,
+    seller: { address: seller },
     amount: row.token_amount ?? "0",
     currency: null,
     asset: null,
@@ -478,19 +487,11 @@ async function q_collectionTraits(args: any, ctx: Ctx) {
 }
 
 async function q_orderFees(args: any, ctx: Ctx) {
-  // unitPrice * quantity breakdown: protocol (0.5%) + marketplace (2%: 1+1)
+  // Fee is a rate per 10_000: 0.5% lssvm2 protocol + 2% marketplace (1% ops + 1% Pot) = 250
   const unitPrice = BigInt(args?.unitPrice ?? "0");
   const quantity = BigInt(args?.quantity ?? "1");
-  const amount = unitPrice * quantity;
-  const protocolFee = amount / 200n; // 0.5% lssvm2
-  const marketplaceFee = amount / 50n; // 2% (1% ops + 1% Pot)
-  return {
-    amountWithoutFees: (amount - protocolFee - marketplaceFee).toString(),
-    fees: [
-      { account: { address: ctx.env.FEE_RECIPIENT ?? ctx.env.POT ?? "" }, value: marketplaceFee.toString() },
-      { account: { address: ctx.env.FACTORY ?? "" }, value: protocolFee.toString() },
-    ],
-  };
+  void unitPrice; void quantity;
+  return { value: "250", precision: 0 };
 }
 
 async function m_refreshAsset(_args: any, _ctx: Ctx) {

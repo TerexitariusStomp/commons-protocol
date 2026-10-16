@@ -107,6 +107,48 @@ async function scan(env: Env) {
   }
 }
 
+// Hydrate asset metadata (name/image/animation) from token_uri JSON.
+// Batches a few per cron run; ipfs:// is gatewayed via ipfs.io.
+const IPFS_GW = "https://ipfs.io/ipfs/";
+async function hydrateMetadata(env: Env) {
+  const { results } = await env.DB.prepare(
+    "SELECT chain_id, collection_address, token_id, token_uri FROM assets WHERE (image IS NULL OR image='') AND token_uri IS NOT NULL AND token_uri!='' LIMIT 10"
+  ).all();
+  for (const r of results as any[]) {
+    try {
+      const uri = String(r.token_uri).replace(/^ipfs:\/\//, IPFS_GW);
+      const res = await fetch(uri, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const meta = (await res.json()) as any;
+      const image = meta.image ?? meta.image_url ?? "";
+      const anim = meta.animation_url ?? null;
+      await env.DB.prepare(
+        "UPDATE assets SET name=COALESCE(NULLIF(?,''),name), image=?, animation_url=?, description=COALESCE(NULLIF(?,''),description), updated_at=unixepoch() WHERE chain_id=? AND collection_address=? AND token_id=?"
+      )
+        .bind(
+          String(meta.name ?? ""),
+          image ? String(image).replace(/^ipfs:\/\//, IPFS_GW) : "",
+          anim ? String(anim).replace(/^ipfs:\/\//, IPFS_GW) : null,
+          String(meta.description ?? ""),
+          r.chain_id,
+          r.collection_address,
+          r.token_id
+        )
+        .run();
+      if (Array.isArray(meta.attributes)) {
+        for (const t of meta.attributes) {
+          if (!t?.trait_type) continue;
+          await env.DB.prepare(
+            "INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(?,?,?,?,?)"
+          )
+            .bind(r.chain_id, r.collection_address, r.token_id, String(t.trait_type), String(t.value ?? ""))
+            .run();
+        }
+      }
+    } catch { /* bad uri/host — leave for next pass */ }
+  }
+}
+
 function json(data: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(data), {
     headers: { "content-type": "application/json", "access-control-allow-origin": "*" },
@@ -293,7 +335,9 @@ export default {
 
   async scheduled(e: ScheduledEvent, env: Env, ctx: ExecutionContext) {
     ctx.waitUntil(
-      e.cron === env.FLOW_EPOCH_CRON ? settleEpoch(env, false).then(() => undefined) : scan(env)
+      e.cron === env.FLOW_EPOCH_CRON
+        ? settleEpoch(env, false).then(() => undefined)
+        : scan(env).then(() => hydrateMetadata(env))
     );
   },
 };

@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS swaps (
   log_index INTEGER NOT NULL,
   pair TEXT NOT NULL,
   is_buy INTEGER NOT NULL,
+  buyer TEXT,
+  seller TEXT,
   nft_count INTEGER,
   token_amount TEXT,
   block INTEGER,
