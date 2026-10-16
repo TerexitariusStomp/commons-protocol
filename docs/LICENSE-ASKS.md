@@ -1,5 +1,9 @@
 # License asks — draft messages to send
 
+Status: PRs opened 2026-10 — pastry#1, artizenal#1, ImpactHook#1,
+artizen-fyi#13. Ecosystem/collab PRs: starter-kit#624, lssvm2#4,
+holons#73, artizen-frontend#696, solidarity-fund#211, aynipay-website#1.
+
 ## 1. tbsoc/pastry → Bread Cooperative team
 
 > Hey — we're building the post-Artizen public-goods marketplace protocol
