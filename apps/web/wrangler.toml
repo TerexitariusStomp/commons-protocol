@@ -1,0 +1,12 @@
+name = "commons-web"
+account_id = "46966abcfb8f1245ec055842177edcb2"
+compatibility_date = "2025-06-01"
+compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+
+[placement]
+mode = "smart"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"

@@ -34,6 +34,7 @@ const ALLOW = [
 // entry has been manually verified. Map: name → verified SPDX id.
 const VERIFIED_EXCEPTIONS = {
   "@metamask/eth-json-rpc-provider": "ISC", // registry field; tarball omits it
+  "oboe": "BSD-2-Clause", // package.json says "BSD"; shipped LICENCE file is BSD-2-Clause
 };
 
 // Walk node_modules (npm workspaces hoist to the root). Falls back to any

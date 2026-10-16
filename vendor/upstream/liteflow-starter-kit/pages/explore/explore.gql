@@ -1,0 +1,72 @@
+query FetchAllERC721And1155(
+  $address: Address
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [AssetsOrderBy!]
+  $condition: AssetCondition
+) {
+  assets(
+    condition: $condition
+    first: $limit
+    offset: $offset
+    orderBy: $orderBy
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      chainId
+      collectionAddress
+      tokenId
+      name
+      collection {
+        chainId
+        address
+        name
+        standard
+      }
+      image
+      imageMimetype
+      owned: ownership(ownerAddress: $address) {
+        quantity
+      }
+      quantity
+      bestOpenOffer {
+        unitPrice
+        amount
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+      }
+      bestListing {
+        id
+        unitPrice
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+        maker {
+          address
+        }
+      }
+      totalListingsCount
+      totalListingsCurrencyDistinctCount
+      creator {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+    }
+  }
+}

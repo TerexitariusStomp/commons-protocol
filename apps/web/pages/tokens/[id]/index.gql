@@ -1,0 +1,168 @@
+query FetchAsset(
+  $chainId: Int!
+  $collectionAddress: Address!
+  $tokenId: String!
+  $address: Address
+) {
+  asset(
+    chainId: $chainId
+    collectionAddress: $collectionAddress
+    tokenId: $tokenId
+  ) {
+    deletedAt
+    tokenId
+    tokenUri
+    chainId
+    collectionAddress
+    collection {
+      chainId
+      name
+      address
+      standard
+      supply
+      mintType
+    }
+    name
+    description
+    traits(
+      orderBy: TYPE_ASC
+      first: 100 # TODO: implement pagination
+    ) {
+      nodes {
+        type
+        value
+        collectionTraitValue {
+          numberOfAssets
+        }
+      }
+    }
+    quantity
+    image
+    imageMimetype
+    animationUrl
+    animationMimetype
+    creator {
+      address
+      name
+      image
+      verification {
+        status
+      }
+    }
+    owned: ownership(ownerAddress: $address) {
+      quantity
+    }
+  }
+  ownerships(
+    condition: {
+      chainId: $chainId
+      collectionAddress: $collectionAddress
+      tokenId: $tokenId
+    }
+    orderBy: [
+      QUANTITY_DESC
+      ACCOUNT_BY_OWNER_ADDRESS__NAME_ASC
+      OWNER_ADDRESS_ASC
+    ]
+    first: 5
+  ) {
+    totalCount
+    nodes {
+      ownerAddress
+      quantity
+      owner {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+    }
+  }
+  bids: openOffers(
+    orderBy: [UNIT_PRICE_IN_REF_DESC, CREATED_AT_ASC]
+    condition: {
+      chainId: $chainId
+      collectionAddress: $collectionAddress
+      tokenId: $tokenId
+      status: ACTIVE
+    }
+    first: 100 # TODO: implement pagination
+  ) {
+    nodes {
+      id
+      createdAt
+      expiredAt
+      availableQuantity
+      taker {
+        address
+      }
+      maker {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      unitPrice
+      amount
+      currency {
+        image
+        name
+        id
+        decimals
+        symbol
+      }
+    }
+  }
+  sales: listings(
+    orderBy: [UNIT_PRICE_IN_REF_ASC, CREATED_AT_ASC]
+    condition: {
+      chainId: $chainId
+      collectionAddress: $collectionAddress
+      tokenId: $tokenId
+      status: ACTIVE
+    } # TODO: implement pagination. when implementing pagination, find a way to get availableQuantity of all sales
+  ) {
+    nodes {
+      id
+      unitPrice
+      expiredAt
+      availableQuantity
+      currency {
+        image
+        name
+        id
+        decimals
+        symbol
+      }
+      maker {
+        image
+        address
+        name
+        verification {
+          status
+        }
+      }
+    }
+  }
+  currencies(
+    orderBy: CREATED_AT_ASC
+    condition: {
+      chainId: $chainId
+      onlyToken: true # keep only non-native currency. Cannot create bid with native currency.
+    }
+  ) {
+    nodes {
+      id
+      chainId
+      address
+      decimals
+      symbol
+      name
+      image
+    }
+  }
+}

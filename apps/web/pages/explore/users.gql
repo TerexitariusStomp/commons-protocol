@@ -1,0 +1,28 @@
+query FetchExploreUsers(
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [AccountsOrderBy!]
+  $search: String
+) {
+  users: accounts(
+    first: $limit
+    offset: $offset
+    orderBy: $orderBy
+    condition: { search: $search }
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      username
+      address
+      image
+      cover
+      name
+      verification {
+        status
+      }
+    }
+  }
+}

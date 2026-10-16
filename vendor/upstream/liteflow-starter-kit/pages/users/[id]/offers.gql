@@ -1,0 +1,55 @@
+query FetchUserFixedPrice(
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [OffersOrderBy!]
+  $address: Address!
+) {
+  offers: listings(
+    orderBy: $orderBy
+    first: $limit
+    offset: $offset
+    condition: { makerAddress: $address }
+    includeWhenAssetDeleted: YES
+    includeWhenCurrencyDeleted: YES
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      id
+      unitPrice
+      availableQuantity
+      expiredAt
+      createdAt
+      maker {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      asset {
+        chainId
+        collectionAddress
+        tokenId
+        name
+        image
+        imageMimetype
+        owned: ownership(ownerAddress: $address) {
+          quantity
+        }
+        deletedAt
+      }
+      currency {
+        id
+        name
+        image
+        decimals
+        symbol
+        deletedAt
+      }
+    }
+  }
+}

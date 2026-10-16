@@ -1,0 +1,41 @@
+query FetchCartItems($offerIds: [UUID!]!) {
+  listings(condition: { ids: $offerIds, status: [ACTIVE, EXPIRED] }) {
+    nodes {
+      id
+      type
+      expiredAt
+      maker {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      unitPrice
+      availableQuantity
+      currency {
+        image
+        id
+        decimals
+        symbol
+      }
+      asset {
+        chainId
+        collectionAddress
+        tokenId
+        collection {
+          chainId
+          address
+          name
+          standard
+        }
+        name
+        image
+        imageMimetype
+        animationUrl
+        animationMimetype
+      }
+    }
+  }
+}

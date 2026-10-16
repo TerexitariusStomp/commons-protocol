@@ -1,0 +1,321 @@
+type Account{
+  address: Address!
+  name: String
+  image: URI
+  verification: AccountVerification
+  username: String
+  cover: URI
+  description: String
+  twitter: String
+  instagram: String
+  website: String
+  email: String
+}
+type AccountVerification{
+  status: AccountVerificationStatus!
+  account: Account!
+}
+type AccountsConnection{
+  nodes: [Account!]!
+  pageInfo: PageInfo!
+}
+enum AccountsOrderBy{ CREATED_AT_ASC CREATED_AT_DESC NAME_ASC NAME_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC }
+type Asset{
+  chainId: Int!
+  collectionAddress: Address!
+  tokenId: String!
+  collection: Collection!
+  name: String!
+  image: URI!
+  imageMimetype: String
+  animationUrl: URI
+  animationMimetype: String
+  quantity: Int256!
+  creator: Account!
+  ownership(ownerAddress: Address): Ownership
+  bestOpenOffer: Offer
+  bestListing: Offer
+  totalListingsCount: Int!
+  totalListingsCurrencyDistinctCount: Int!
+  updatedAt: Datetime!
+  deletedAt: Datetime
+  description: String!
+  createdAt: Datetime!
+  tokenUri: URI
+  traits(first: Int, includeWhenAssetDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [AssetTraitsOrderBy!]): AssetTraitsConnection!
+  royalties(first: Int, includeWhenAssetDeleted: IncludeDeletedOption, offset: Int): [Royalty!]!
+}
+type AssetHistoriesConnection{
+  pageInfo: PageInfo!
+  nodes: [AssetHistory!]!
+}
+type AssetHistory{
+  action: AssetHistoryAction!
+  date: Datetime!
+  unitPrice: Uint256
+  quantity: Uint256!
+  fromAddress: Address!
+  from: Account!
+  toAddress: Address
+  to: Account
+  transactionHash: Bytes32
+  currency: Currency
+}
+enum AssetHistoryAction{ BURN LAZYMINT LISTING MINT PURCHASE TRANSFER }
+type AssetTrait{
+  type: String!
+  value: String!
+  collectionTraitValue: CollectionTraitValue
+}
+type AssetTraitsConnection{
+  nodes: [AssetTrait!]!
+}
+type AssetsConnection{
+  nodes: [Asset!]!
+  pageInfo: PageInfo!
+}
+enum AssetsOrderBy{ BEST_PRICE_ASC BEST_PRICE_DESC CREATED_AT_ASC CREATED_AT_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC }
+type Collection{
+  chainId: Int!
+  address: Address!
+  name: String!
+  standard: Standard!
+  image: URI
+  cover: URI
+  description: String
+  totalVolume(from: Datetime): CollectionStats!
+  floorPrice: CollectionStats
+  mintType: MintType!
+  discord: String
+  deployer: Account!
+  twitter: String
+  website: String
+  deletedAt: Datetime
+  deployerAddress: Address!
+  numberOfOwners: Int!
+  supply: Int!
+}
+type CollectionStats{
+  refCode: String!
+  valueInRef: BigFloat!
+}
+type CollectionTrait{
+  type: String!
+  numberOfValues: Int!
+  values(first: Int, includeWhenCollectionByOrganizationIdAndChainIdAndCollectionAddressDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [CollectionTraitValuesOrderBy!]): CollectionTraitValuesConnection!
+}
+type CollectionTraitValue{
+  value: String!
+  numberOfAssets: Int!
+}
+type CollectionTraitValuesConnection{
+  nodes: [CollectionTraitValue!]!
+}
+type CollectionTraitsConnection{
+  pageInfo: PageInfo!
+  nodes: [CollectionTrait!]!
+}
+type CollectionsConnection{
+  nodes: [Collection!]!
+  pageInfo: PageInfo!
+}
+enum CollectionsOrderBy{ CREATED_AT_ASC CREATED_AT_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC TOTAL_VOLUME_ASC TOTAL_VOLUME_DESC TOTAL_VOLUME_LAST_7D_ASC TOTAL_VOLUME_LAST_7D_DESC TOTAL_VOLUME_LAST_14D_ASC TOTAL_VOLUME_LAST_14D_DESC TOTAL_VOLUME_LAST_24H_ASC TOTAL_VOLUME_LAST_24H_DESC TOTAL_VOLUME_LAST_28D_ASC TOTAL_VOLUME_LAST_28D_DESC }
+type Config{
+  name: String!
+  hasLazyMint: Boolean!
+  maxRoyaltiesPerTenThousand: Int!
+  offerValiditySeconds: Int!
+  metadata: JSON!
+}
+type CreateCheckoutApprovalTransactionsPayload{
+  currency: Currency!
+  amount: Uint256!
+  transaction: Transaction
+}
+type CurrenciesConnection{
+  nodes: [Currency!]!
+}
+type Currency{
+  id: String!
+  decimals: Int!
+  symbol: String!
+  image: URI!
+  name: String!
+  chainId: Int!
+  address: Address
+  deletedAt: Datetime
+}
+type Drop{
+  id: UUID!
+  name: String!
+  startDate: Datetime!
+  endDate: Datetime
+  unitPrice: Uint256!
+  minted: Uint256!
+  supply: Uint256
+  maxQuantityPerWallet: Uint256
+  isAllowed(minter: Address!): Boolean!
+  maxQuantity(minter: Address!): Uint256
+  currency: Currency!
+  collection: Collection!
+}
+type DropsConnection{
+  nodes: [Drop!]!
+  pageInfo: PageInfo!
+}
+type Fee{
+  value: String!
+  precision: Int!
+}
+type Mutation{
+  createCheckoutApprovalTransactions(accountAddress: Address!, items: [CreateCheckoutApprovalTransactionsItemInput!]!): [CreateCheckoutApprovalTransactionsPayload!]!
+  refreshAsset(input: RefreshAssetInput!): RefreshAssetPayload
+}
+type Notification{
+  id: UUID!
+  action: NotificationAction!
+  createdAt: Datetime!
+  accountVerification: AccountVerification
+  offer: Offer
+  trade: Trade
+  refereeAccount: Account
+}
+type NotificationsConnection{
+  totalCount: Int!
+  pageInfo: PageInfo!
+  nodes: [Notification!]!
+}
+type Offer{
+  id: UUID!
+  type: OfferType!
+  expiredAt: Datetime!
+  maker: Account!
+  unitPrice: Uint256!
+  availableQuantity: Uint256!
+  currency: Currency!
+  asset: Asset!
+  amount: Uint256!
+  chainId: Int!
+  collectionAddress: Address!
+  tokenId: String!
+  quantity: Uint256!
+  createdAt: Datetime!
+  taker: Account
+}
+type OffersConnection{
+  nodes: [Offer!]!
+  pageInfo: PageInfo!
+}
+enum OffersOrderBy{ CREATED_AT_ASC CREATED_AT_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC UNIT_PRICE_IN_REF_ASC UNIT_PRICE_IN_REF_DESC }
+type Ownership{
+  quantity: Int256!
+  ownerAddress: Address!
+  owner: Account!
+  asset: Asset
+}
+type OwnershipsConnection{
+  totalCount: Int!
+  nodes: [Ownership!]!
+  pageInfo: PageInfo!
+}
+enum OwnershipsOrderBy{ ACCOUNT_BY_OWNER_ADDRESS__NAME_ASC ACCOUNT_BY_OWNER_ADDRESS__NAME_DESC CREATED_AT_ASC CREATED_AT_DESC NATURAL OWNER_ADDRESS_ASC OWNER_ADDRESS_DESC PRIMARY_KEY_ASC PRIMARY_KEY_DESC QUANTITY_ASC QUANTITY_DESC }
+type PageInfo{
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+type Query{
+  listings(condition: OfferCondition, first: Int, includeWhenAssetDeleted: IncludeDeletedOption, includeWhenCurrencyDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [OffersOrderBy!]): OffersConnection
+  assetHistories(condition: AssetHistoryCondition, first: Int, includeWhenAssetDeleted: IncludeDeletedOption, includeWhenCurrencyDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [AssetHistoriesOrderBy!]): AssetHistoriesConnection
+  assets(condition: AssetCondition, first: Int, includeDeleted: IncludeDeletedOption, includeWhenCollectionDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [AssetsOrderBy!]): AssetsConnection
+  collections(condition: CollectionCondition, first: Int, includeDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [CollectionsOrderBy!]): CollectionsConnection
+  asset(chainId: Int!, collectionAddress: Address!, tokenId: String!): Asset
+  ownerships(condition: OwnershipCondition, first: Int, includeWhenAssetDeleted: IncludeDeletedOption, includeWhenCollectionDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [OwnershipsOrderBy!]): OwnershipsConnection
+  currencies(condition: CurrencyCondition, first: Int, includeDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [CurrenciesOrderBy!]): CurrenciesConnection
+  accounts(condition: AccountCondition, first: Int, last: Int, offset: Int, orderBy: [AccountsOrderBy!]): AccountsConnection
+  account(address: Address!): Account
+  config: Config!
+  orderFees(chainId: Int, collectionAddress: Address, currencyId: String, metadata: JSON, quantity: Uint256, tokenId: String, unitPrice: Uint256): Fee!
+  collectionTraits(condition: CollectionTraitCondition, first: Int, includeWhenCollectionDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [CollectionTraitsOrderBy!]): CollectionTraitsConnection
+  notifications(condition: NotificationCondition, first: Int, includeWhenTradeDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [NotificationsOrderBy!]): NotificationsConnection
+  listing(id: UUID!): Offer
+  collection(address: Address!, chainId: Int!): Collection
+  drops(condition: DropCondition, first: Int, includeWhenCollectionDeleted: IncludeDeletedOption, includeWhenCurrencyDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [DropsOrderBy!]): DropsConnection
+  openOffers(condition: OfferCondition, first: Int, includeWhenAssetDeleted: IncludeDeletedOption, includeWhenCurrencyDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [OffersOrderBy!]): OffersConnection
+  trades(condition: TradeCondition, first: Int, includeDeleted: IncludeDeletedOption, includeWhenAssetDeleted: IncludeDeletedOption, includeWhenCollectionDeleted: IncludeDeletedOption, includeWhenCurrencyDeleted: IncludeDeletedOption, last: Int, offset: Int, orderBy: [TradesOrderBy!]): TradesConnection
+}
+type RefreshAssetPayload{
+  clientMutationId: String
+}
+type Royalty{
+  value: Int!
+}
+type Trade{
+  quantity: Uint256!
+  buyerAddress: Address!
+  buyer: Account!
+  transactionHash: Bytes32!
+  timestamp: Datetime!
+  sellerAddress: Address!
+  seller: Account!
+  amount: Uint256!
+  currency: Currency
+  asset: Asset
+}
+type TradesConnection{
+  pageInfo: PageInfo!
+  nodes: [Trade!]!
+}
+enum TradesOrderBy{ AMOUNT_IN_REF_ASC AMOUNT_IN_REF_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC TIMESTAMP_ASC TIMESTAMP_DESC }
+type Transaction{
+  to: Address
+  from: Address
+  data: String
+  gasPrice: Uint256
+  value: Uint256
+}
+scalar Address
+scalar URI
+scalar UUID
+scalar Datetime
+scalar Cursor
+scalar JSON
+scalar Uint256
+scalar Int256
+scalar TransactionHash
+scalar BigFloat
+scalar Bytes32
+scalar FullText
+enum AccountVerificationStatus{ PENDING REJECTED VALIDATED }
+enum IncludeDeletedOption{ EXCLUSIVELY INHERIT NO YES }
+enum AssetTraitsOrderBy{ NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC TYPE_ASC TYPE_DESC }
+enum Standard{ ERC721 ERC1155 }
+enum MintType{ NONE ONLY_OWNER PUBLIC }
+enum CollectionTraitValuesOrderBy{ NATURAL NUMBER_OF_ASSETS_ASC NUMBER_OF_ASSETS_DESC PRIMARY_KEY_ASC PRIMARY_KEY_DESC VALUE_ASC VALUE_DESC }
+input CreateCheckoutApprovalTransactionsItemInput{ fillQuantity: Uint256! offerId: UUID! }
+input RefreshAssetInput{ chainId: Int! clientMutationId: String collectionAddress: Address! tokenId: String! }
+enum NotificationAction{ ACCOUNT_VERIFICATION_VALIDATED BID_ACCEPTED BID_CREATED BID_EXPIRED OFFER_EXPIRED OFFER_PURCHASED REFERRAL_REFEREE_REGISTERED }
+enum OfferType{ BUY SALE }
+input OfferCondition{ chainId: Int collectionAddress: Address ids: [UUID!] makerAddress: Address not: OfferNotCondition status: [OfferStatus!] takerAddressV1: Address tokenId: String }
+input AssetHistoryCondition{ action: AssetHistoryAction actions: [AssetHistoryAction!] chainId: Int collectionAddress: Address tokenId: String }
+enum AssetHistoriesOrderBy{ DATE_ASC DATE_DESC NATURAL }
+input AssetCondition{ chainId: Int chainIds: [Int!] collectionAddress: Address creatorAddress: Address ids: [AssetIdsCondition!] listings: AssetListingsCondition openOffers: AssetOpenOffersCondition search: String tokenId: String traits: [AssetTraitsCondition!] }
+input CollectionCondition{ chainIds: [Int!] ids: [CollectionIdsCondition!] mintType: MintType mintTypes: [MintType!] search: String }
+input OwnershipCondition{ chainId: Int collectionAddress: Address ownerAddress: Address tokenId: String }
+input CurrencyCondition{ chainId: Int onlyToken: Boolean }
+enum CurrenciesOrderBy{ CREATED_AT_ASC CREATED_AT_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC SYMBOL_ASC SYMBOL_DESC }
+input AccountCondition{ address: Address addresses: [Address!] search: String }
+input CollectionTraitCondition{ chainId: Int collectionAddress: Address search: String }
+enum CollectionTraitsOrderBy{ NATURAL TYPE_ASC TYPE_DESC }
+input NotificationCondition{ action: NotificationAction actions: [NotificationAction!] after: Datetime }
+enum NotificationsOrderBy{ CREATED_AT_ASC CREATED_AT_DESC NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC }
+input DropCondition{ chainId: Int collectionAddress: Address status: DropStatus }
+enum DropsOrderBy{ NATURAL PRIMARY_KEY_ASC PRIMARY_KEY_DESC START_DATE_ASC START_DATE_DESC }
+input TradeCondition{ buyerAddress: Address sellerAddress: Address }
+input OfferNotCondition{ makerAddress: Address }
+enum OfferStatus{ ACTIVE EXPIRED FILLED }
+input AssetIdsCondition{ chainId: Int! collectionAddress: Address! tokenId: String! }
+input AssetListingsCondition{ currencyId: String makerAddress: Address maxUnitPrice: String minUnitPrice: String status: OfferStatus }
+input AssetOpenOffersCondition{ currencyId: String maxUnitPrice: String minUnitPrice: String status: OfferStatus }
+input AssetTraitsCondition{ type: String! values: [String!] }
+input CollectionIdsCondition{ address: Address! chainId: Int! }
+enum DropStatus{ ACTIVE ENDED UPCOMING }

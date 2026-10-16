@@ -1,0 +1,126 @@
+query FetchCollectionDetails($collectionAddress: Address!, $chainId: Int!) {
+  collection(address: $collectionAddress, chainId: $chainId) {
+    address
+    chainId
+    deletedAt
+    cover
+    image
+    name
+    description
+    discord
+    twitter
+    website
+    standard
+    deployerAddress
+    deployer {
+      address
+      name
+      username
+      verification {
+        status
+      }
+    }
+    totalVolume {
+      refCode
+      valueInRef
+    }
+    floorPrice {
+      refCode
+      valueInRef
+    }
+  }
+}
+
+query FetchCollectionMetrics($collectionAddress: Address!, $chainId: Int!) {
+  collection(address: $collectionAddress, chainId: $chainId) {
+    address
+    chainId
+    numberOfOwners
+    supply
+    floorPrice {
+      valueInRef
+      refCode
+    }
+    totalVolume {
+      valueInRef
+      refCode
+    }
+  }
+}
+
+query FetchCollectionAssets(
+  $currentAccount: Address!
+  $offset: Int!
+  $limit: Int!
+  $condition: AssetCondition!
+  $orderBy: [AssetsOrderBy!]
+) {
+  assets(
+    condition: $condition
+    orderBy: $orderBy
+    first: $limit
+    offset: $offset
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      chainId
+      collectionAddress
+      tokenId
+      name
+      description
+      image
+      imageMimetype
+      createdAt
+      creator {
+        username
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      collection {
+        chainId
+        address
+        image
+        name
+        standard
+      }
+      owned: ownership(ownerAddress: $currentAccount) {
+        quantity
+      }
+      quantity
+      bestOpenOffer {
+        unitPrice
+        amount
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+      }
+      bestListing {
+        id
+        unitPrice
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+        maker {
+          address
+        }
+      }
+      totalListingsCount
+      totalListingsCurrencyDistinctCount
+    }
+  }
+}

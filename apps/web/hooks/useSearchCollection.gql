@@ -1,0 +1,32 @@
+query SearchCollection(
+  $chainIds: [Int!]
+  $search: String
+  $limit: Int!
+  $offset: Int!
+) {
+  collections(
+    orderBy: TOTAL_VOLUME_DESC
+    first: $limit
+    condition: { chainIds: $chainIds, search: $search }
+    offset: $offset
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    nodes {
+      chainId
+      address
+      name
+      cover
+      image
+      totalVolume {
+        refCode
+        valueInRef
+      }
+      floorPrice {
+        refCode
+        valueInRef
+      }
+    }
+  }
+}

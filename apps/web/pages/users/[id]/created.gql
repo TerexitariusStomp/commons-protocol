@@ -1,0 +1,22 @@
+query FetchCreatedAssets(
+  $address: Address!
+  $currentAddress: Address!
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [AssetsOrderBy!]
+) {
+  created: assets(
+    condition: { creatorAddress: $address }
+    first: $limit
+    offset: $offset
+    orderBy: $orderBy
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      ...AssetDetail
+    }
+  }
+}

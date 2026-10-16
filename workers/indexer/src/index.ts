@@ -1,4 +1,4 @@
-import { createPublicClient, http, parseAbiItem, erc20Abi, formatUnits, type Address } from "viem";
+import { createPublicClient, http, parseAbiItem, formatUnits, type Address } from "viem";
 import { baseSepolia } from "viem/chains";
 import {
   computeEpoch,
@@ -7,6 +7,7 @@ import {
   type FlowAgreement,
   type SimHolon,
 } from "./flow";
+import { handleGraphQL } from "./graphql";
 
 export interface Env {
   DB: D1Database;
@@ -23,6 +24,47 @@ const FACTORY_EVENTS = [
   parseAbiItem("event NewERC721Pair(address poolAddress, uint256[] initialNFTBalance)"),
   parseAbiItem("event NewERC1155Pair(address poolAddress, uint256 initialNFTBalance)"),
 ];
+
+const PAIR_READ_ABI = [
+  "function nft() view returns (address)",
+  "function token() view returns (address)",
+  "function spotPrice() view returns (uint128)",
+  "function delta() view returns (uint128)",
+  "function poolType() view returns (uint8)",
+  "function assetRecipient() view returns (address)",
+  "function nftId() view returns (uint256)",
+] as const;
+
+// enrich a newly-seen pair with its on-chain fields (nft, token, spot, owner…)
+async function enrichPair(env: Env, client: any, pair: Address, erc1155: boolean) {
+  const read = async (fn: string) =>
+    client.readContract({ address: pair, abi: PAIR_READ_ABI, functionName: fn as any });
+  const [nft, poolTypeRaw, spot, delta, owner] = await Promise.all([
+    read("nft").catch(() => null),
+    read("poolType").catch(() => null),
+    read("spotPrice").catch(() => null),
+    read("delta").catch(() => null),
+    read("assetRecipient").catch(() => null),
+  ]);
+  let token: string | null = null;
+  try { token = (await read("token")) as string; } catch { /* ETH pair */ }
+  const nftId = erc1155 ? String((await read("nftId").catch(() => null)) ?? "0") : null;
+  const poolTypeNum = poolTypeRaw == null ? null : Number(poolTypeRaw);
+  await env.DB.prepare(
+    `UPDATE pools SET nft=?, nft_id=?, token=?, spot_price=?, delta=?, pool_type=?, owner=? WHERE lower(pair)=?`
+  )
+    .bind(
+      nft ? String(nft).toLowerCase() : "",
+      nftId,
+      token ? String(token).toLowerCase() : null,
+      spot != null ? String(spot) : null,
+      delta != null ? String(delta) : null,
+      poolTypeNum != null ? String(poolTypeNum) : null,
+      owner ? String(owner).toLowerCase() : null,
+      pair.toLowerCase()
+    )
+    .run();
+}
 
 const PAGE = 40_000n;
 
@@ -51,22 +93,14 @@ async function scan(env: Env) {
       toBlock: to,
     });
     for (const log of logs) {
+      const pair = (log.args as any).poolAddress as Address;
+      const erc1155 = log.eventName === "NewERC1155Pair";
       await env.DB.prepare(
-        "INSERT OR IGNORE INTO pools(pair,nft,nft_id,token,spot_price,delta,pool_type,owner,created_block,created_tx) VALUES(?,?,?,?,?,?,?,?,?,?)"
+        "INSERT OR IGNORE INTO pools(pair,chain_id,nft,pool_type,created_block,created_tx) VALUES(?,?,?,?,?,?)"
       )
-        .bind(
-          (log.args as any).poolAddress,
-          "",
-          null,
-          null,
-          null,
-          null,
-          log.eventName === "NewERC1155Pair" ? "1155" : "721",
-          null,
-          Number(log.blockNumber),
-          log.transactionHash
-        )
+        .bind(pair, 84532, "", null, Number(log.blockNumber), log.transactionHash)
         .run();
+      await enrichPair(env, client, pair, erc1155);
     }
     from = to + 1n;
     await setCursor(env.DB, from);
@@ -174,6 +208,85 @@ export default {
       return json(await settleEpoch(env, false));
     }
 
+    // ---- marketplace graphql (liteflow-compatible subset) ----
+    if (url.pathname === "/graphql" && req.method === "POST") {
+      return handleGraphQL(req, env);
+    }
+    if (url.pathname === "/graphql" && req.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "POST, OPTIONS",
+          "access-control-allow-headers": "content-type, authorization",
+        },
+      });
+    }
+
+    // ---- auth (SIWE-lite) ----
+    if (url.pathname === "/auth/nonce" && req.method === "POST") {
+      const { address } = (await req.json()) as { address: string };
+      const nonce = crypto.randomUUID();
+      const exp = Math.floor(Date.now() / 1000) + 3600;
+      const message = `Commons wants you to sign in.\n\nAddress: ${address}\nNonce: ${nonce}\nIssued: ${new Date().toISOString()}`;
+      await env.DB.prepare(
+        "INSERT INTO state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value"
+      ).bind(`nonce:${address.toLowerCase()}`, JSON.stringify({ nonce, exp })).run();
+      return json({ message });
+    }
+    if (url.pathname === "/auth/verify" && req.method === "POST") {
+      const { address, message, signature } = (await req.json()) as {
+        address: string; message: string; signature: string;
+      };
+      try {
+        const { verifyMessage } = await import("viem");
+        const ok = await verifyMessage({ address: address as Address, message, signature: signature as `0x${string}` });
+        if (!ok) return json({ error: "bad signature" }, { status: 401 });
+      } catch {
+        return json({ error: "verification failed" }, { status: 401 });
+      }
+      const exp = Math.floor(Date.now() / 1000) + 7 * 86400;
+      // unsigned-jwt-style token: payload only, gated by signature verification above
+      const payload = btoa(JSON.stringify({ address: address.toLowerCase(), exp }));
+      const token = `${btoa('{"alg":"none"}')}.${payload}.commons`;
+      return json({ token });
+    }
+
+    // ---- pool inventory (nftIds held by a pair, for router buy calls) ----
+    if (url.pathname === "/pool/inventory" && req.method === "POST") {
+      const { pair, count } = (await req.json()) as { chainId: number; pair: string; count: number };
+      const { results } = await env.DB.prepare(
+        "SELECT nft_id FROM pool_inventory WHERE lower(pair)=? LIMIT ?"
+      ).bind((pair || "").toLowerCase(), count ?? 1).all<{ nft_id: string }>();
+      return json({ ids: results.map((r) => r.nft_id) });
+    }
+
+    // ---- accounts / invitations ----
+    if (url.pathname === "/accounts" && req.method === "POST") {
+      const a = (await req.json()) as Record<string, string>;
+      if (!a.address) return json({ error: "address required" }, { status: 400 });
+      await env.DB.prepare(
+        `INSERT INTO accounts(address,name,username,description,twitter,instagram,website,image,cover)
+         VALUES(?,?,?,?,?,?,?,?,?)
+         ON CONFLICT(address) DO UPDATE SET name=excluded.name, username=excluded.username,
+           description=excluded.description, twitter=excluded.twitter, instagram=excluded.instagram,
+           website=excluded.website, image=excluded.image, cover=excluded.cover`
+      ).bind(
+        a.address.toLowerCase(), a.name ?? null, a.username ?? null, a.description ?? null,
+        a.twitter ?? null, a.instagram ?? null, a.website ?? null, a.image ?? null, a.cover ?? null
+      ).run();
+      return json({ address: a.address.toLowerCase() });
+    }
+    if (url.pathname === "/invitations" && req.method === "POST") {
+      const id = crypto.randomUUID();
+      await env.DB.prepare("INSERT INTO state(key,value) VALUES(?,?)").bind(`invite:${id}`, "open").run();
+      return json({ id });
+    }
+    const invMatch = url.pathname.match(/^\/invitations\/([^/]+)\/accept$/);
+    if (invMatch && req.method === "POST") {
+      await env.DB.prepare("UPDATE state SET value='accepted' WHERE key=?").bind(`invite:${invMatch[1]}`).run();
+      return json({ ok: true });
+    }
+
     if (url.pathname === "/health") return json({ ok: true, cursor: (await getCursor(env.DB)).toString() });
     return json({ error: "not found" }, { status: 404 });
   },
@@ -213,12 +326,12 @@ async function settleEpoch(env: Env, settleOnchain: boolean) {
     try {
       const bal = await client.readContract({
         address: env.STABLE,
-        abi: erc20Abi,
+        abi: ["function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)"] as const,
         functionName: "balanceOf",
         args: [p.address as Address],
       });
-      const dec = await client.readContract({ address: env.STABLE, abi: erc20Abi, functionName: "decimals" });
-      balances.set(p.node, Number(formatUnits(bal, dec)));
+      const dec = await client.readContract({ address: env.STABLE, abi: ["function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)"] as const, functionName: "decimals" });
+      balances.set(p.node, Number(formatUnits(bal as bigint, dec as number)));
     } catch {
       balances.set(p.node, 0);
     }

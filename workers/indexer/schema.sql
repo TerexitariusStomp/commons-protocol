@@ -104,3 +104,129 @@ CREATE TABLE IF NOT EXISTS flow_events (
   created_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_flow_events_epoch ON flow_events(epoch);
+
+-- ---- marketplace (liteflow-compatible graphql substrate) ----
+
+CREATE TABLE IF NOT EXISTS collections (
+  chain_id INTEGER NOT NULL,
+  address TEXT NOT NULL,
+  name TEXT,
+  image TEXT,
+  cover TEXT,
+  description TEXT,
+  standard TEXT DEFAULT 'ERC1155',
+  deployer TEXT,
+  volume_ref TEXT,
+  floor_price TEXT,
+  total_sales INTEGER DEFAULT 0,
+  total_owners INTEGER DEFAULT 0,
+  total_supply TEXT,
+  verified INTEGER DEFAULT 0,
+  created_at INTEGER,
+  updated_at INTEGER,
+  PRIMARY KEY (chain_id, address)
+);
+
+CREATE TABLE IF NOT EXISTS assets (
+  chain_id INTEGER NOT NULL,
+  collection_address TEXT NOT NULL,
+  token_id TEXT NOT NULL,
+  name TEXT,
+  image TEXT,
+  image_mimetype TEXT,
+  animation_url TEXT,
+  animation_mimetype TEXT,
+  quantity TEXT DEFAULT '1',
+  creator TEXT,
+  description TEXT,
+  token_uri TEXT,
+  listings_count INTEGER DEFAULT 0,
+  listings_currency_count INTEGER DEFAULT 0,
+  created_at INTEGER,
+  updated_at INTEGER,
+  PRIMARY KEY (chain_id, collection_address, token_id)
+);
+
+CREATE TABLE IF NOT EXISTS ownerships (
+  chain_id INTEGER NOT NULL,
+  collection_address TEXT NOT NULL,
+  token_id TEXT NOT NULL,
+  owner_address TEXT NOT NULL,
+  quantity TEXT NOT NULL,
+  asset_name TEXT,
+  asset_image TEXT,
+  asset_image_mimetype TEXT,
+  asset_animation_url TEXT,
+  PRIMARY KEY (chain_id, collection_address, token_id, owner_address)
+);
+
+CREATE TABLE IF NOT EXISTS asset_traits (
+  chain_id INTEGER NOT NULL,
+  collection_address TEXT NOT NULL,
+  token_id TEXT NOT NULL,
+  type TEXT NOT NULL,
+  value TEXT NOT NULL,
+  PRIMARY KEY (chain_id, collection_address, token_id, type, value)
+);
+
+CREATE TABLE IF NOT EXISTS collection_traits (
+  chain_id INTEGER NOT NULL,
+  collection_address TEXT NOT NULL,
+  type TEXT NOT NULL,
+  value TEXT NOT NULL,
+  count INTEGER DEFAULT 0,
+  PRIMARY KEY (chain_id, collection_address, type, value)
+);
+
+CREATE TABLE IF NOT EXISTS asset_events (
+  chain_id INTEGER,
+  collection_address TEXT,
+  token_id TEXT,
+  action TEXT,
+  ts INTEGER,
+  unit_price TEXT,
+  quantity TEXT,
+  from_address TEXT,
+  to_address TEXT,
+  tx TEXT,
+  block INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS accounts (
+  address TEXT PRIMARY KEY,
+  name TEXT,
+  username TEXT,
+  description TEXT,
+  twitter TEXT,
+  instagram TEXT,
+  website TEXT,
+  email TEXT,
+  image TEXT,
+  cover TEXT,
+  created_at INTEGER,
+  updated_at INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS currencies (
+  chain_id INTEGER NOT NULL,
+  address TEXT NOT NULL,
+  decimals INTEGER DEFAULT 18,
+  symbol TEXT,
+  name TEXT,
+  image TEXT,
+  PRIMARY KEY (chain_id, address)
+);
+
+CREATE TABLE IF NOT EXISTS royalties (
+  chain_id INTEGER NOT NULL,
+  collection_address TEXT NOT NULL,
+  value INTEGER NOT NULL,
+  PRIMARY KEY (chain_id, collection_address)
+);
+
+CREATE TABLE IF NOT EXISTS pool_inventory (
+  pair TEXT NOT NULL,
+  nft_id TEXT NOT NULL,
+  count INTEGER DEFAULT 1,
+  PRIMARY KEY (pair, nft_id)
+);

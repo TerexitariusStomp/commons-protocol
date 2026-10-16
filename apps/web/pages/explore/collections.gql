@@ -1,0 +1,34 @@
+query FetchExploreCollections(
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [CollectionsOrderBy!]
+  $condition: CollectionCondition
+) {
+  collections(
+    first: $limit
+    offset: $offset
+    orderBy: $orderBy
+    condition: $condition
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      chainId
+      address
+      name
+      image
+      cover
+      description
+      totalVolume {
+        refCode
+        valueInRef
+      }
+      floorPrice {
+        refCode
+        valueInRef
+      }
+    }
+  }
+}

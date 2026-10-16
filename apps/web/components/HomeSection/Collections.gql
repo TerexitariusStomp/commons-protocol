@@ -1,0 +1,24 @@
+query FetchCollections($ids: [CollectionIdsCondition!]!, $limit: Int!) {
+  collections(
+    condition: { ids: $ids }
+    first: $limit
+    orderBy: TOTAL_VOLUME_DESC
+  ) {
+    nodes {
+      chainId
+      address
+      name
+      image
+      cover
+      description
+      totalVolume {
+        refCode
+        valueInRef
+      }
+      floorPrice {
+        refCode
+        valueInRef
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+query FetchUserBidsReceived(
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [OffersOrderBy!]
+  $address: Address!
+) {
+  bids: openOffers(
+    orderBy: $orderBy
+    first: $limit
+    offset: $offset
+    condition: {
+      status: ACTIVE
+      not: { makerAddress: $address }
+      takerAddressV1: $address
+    }
+    includeWhenAssetDeleted: YES
+    includeWhenCurrencyDeleted: YES
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      id
+      amount
+      unitPrice
+      availableQuantity
+      expiredAt
+      createdAt
+      maker {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      currency {
+        image
+        name
+        id
+        decimals
+        symbol
+        deletedAt
+      }
+      asset {
+        chainId
+        collectionAddress
+        tokenId
+        name
+        image
+        imageMimetype
+        deletedAt
+      }
+    }
+  }
+}

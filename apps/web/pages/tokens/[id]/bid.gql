@@ -1,0 +1,82 @@
+query BidOnAsset(
+  $chainId: Int!
+  $collectionAddress: Address!
+  $tokenId: String!
+  $address: Address
+) {
+  asset(
+    chainId: $chainId
+    collectionAddress: $collectionAddress
+    tokenId: $tokenId
+  ) {
+    deletedAt
+    chainId
+    collectionAddress
+    tokenId
+    collection {
+      chainId
+      address
+      name
+      standard
+    }
+    quantity
+    name
+    image
+    imageMimetype
+    creator {
+      address
+      name
+      image
+      verification {
+        status
+      }
+    }
+    owned: ownership(ownerAddress: $address) {
+      quantity
+    }
+    bestOpenOffer {
+      unitPrice
+      amount
+      currency {
+        image
+        name
+        id
+        decimals
+        symbol
+      }
+    }
+    bestListing {
+      id
+      unitPrice
+      currency {
+        image
+        name
+        id
+        decimals
+        symbol
+      }
+      maker {
+        address
+      }
+    }
+    totalListingsCount
+    totalListingsCurrencyDistinctCount
+  }
+  currencies(
+    orderBy: CREATED_AT_ASC
+    condition: {
+      chainId: $chainId
+      onlyToken: true # keep only non-native currency. Cannot create bid with native currency.
+    }
+  ) {
+    nodes {
+      id
+      chainId
+      address
+      decimals
+      symbol
+      name
+      image
+    }
+  }
+}

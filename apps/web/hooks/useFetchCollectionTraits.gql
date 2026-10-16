@@ -1,0 +1,35 @@
+query FetchCollectionTraits(
+  $chainId: Int!
+  $address: Address!
+  $search: String
+  $limit: Int!
+  $offset: Int!
+) {
+  collectionTraits(
+    orderBy: [TYPE_ASC]
+    first: $limit
+    condition: {
+      chainId: $chainId
+      collectionAddress: $address
+      search: $search
+    }
+    offset: $offset
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    nodes {
+      type
+      numberOfValues
+      values(
+        first: 50 # TODO: implement pagination
+        orderBy: [NUMBER_OF_ASSETS_DESC, VALUE_ASC]
+      ) {
+        nodes {
+          value
+          numberOfAssets
+        }
+      }
+    }
+  }
+}

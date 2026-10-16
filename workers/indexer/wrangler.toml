@@ -5,7 +5,7 @@ compatibility_date = "2024-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "commons-index"
-database_id = "REPLACE_ME"
+database_id = "1e532072-c482-4da9-8a66-9854e955b289"
 
 [vars]
 RPC_URL = "https://sepolia.base.org"
@@ -17,3 +17,5 @@ START_BLOCK = "0"
 crons = ["*/2 * * * *", "5 0 * * *"]
 STABLE = ""
 # ADMIN_KEY -> wrangler secret put ADMIN_KEY
+
+account_id = "46966abcfb8f1245ec055842177edcb2"

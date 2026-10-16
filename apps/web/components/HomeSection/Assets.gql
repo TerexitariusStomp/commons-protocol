@@ -1,0 +1,71 @@
+query FetchDefaultAssetIds($limit: Int!) {
+  assets(orderBy: CREATED_AT_DESC, first: $limit) {
+    nodes {
+      chainId
+      collectionAddress
+      tokenId
+    }
+  }
+}
+
+query FetchAssets(
+  $limit: Int!
+  $ids: [AssetIdsCondition!]!
+  $address: Address
+) {
+  assets(condition: { ids: $ids }, first: $limit) {
+    nodes {
+      chainId
+      collectionAddress
+      tokenId
+      name
+      collection {
+        chainId
+        address
+        name
+        standard
+      }
+      quantity
+      image
+      imageMimetype
+      creator {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      owned: ownership(ownerAddress: $address) {
+        quantity
+      }
+      bestOpenOffer {
+        unitPrice
+        amount
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+      }
+      bestListing {
+        id
+        unitPrice
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+        maker {
+          address
+        }
+      }
+      totalListingsCount
+      totalListingsCurrencyDistinctCount
+    }
+  }
+}

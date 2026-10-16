@@ -1,0 +1,30 @@
+schema: './schema.graphql'
+documents:
+  - './*.{ts,tsx,gql}'
+  - './pages/**/*.{ts,tsx,gql}'
+  - './components/**/*.{ts,tsx,gql}'
+  - './layouts/**/*.{ts,tsx,gql}'
+  - './hooks/**/*.{ts,tsx,gql}'
+generates:
+  src/graphql.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+      - 'typescript-react-apollo'
+    config:
+      avoidOptionals: true
+      enumsAsTypes: true
+config:
+  scalars:
+    URI: 'URI'
+    UUID: 'UUID'
+    Datetime: 'Date'
+    Cursor: 'string'
+    JSON: '{ [key: string]: any }'
+    Uint256: 'string'
+    Int256: 'string'
+    Address: 'string'
+    TransactionHash: 'string'
+    BigFloat: 'string'
+    Bytes32: 'string'
+    FullText: 'string'

@@ -1,0 +1,22 @@
+query FetchOnSaleAssets(
+  $address: Address!
+  $currentAddress: Address!
+  $limit: Int!
+  $offset: Int!
+  $orderBy: [AssetsOrderBy!]
+) {
+  onSale: assets(
+    condition: { listings: { status: ACTIVE, makerAddress: $address } }
+    first: $limit
+    offset: $offset
+    orderBy: $orderBy
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      ...AssetDetail
+    }
+  }
+}

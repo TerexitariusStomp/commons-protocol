@@ -1,0 +1,55 @@
+fragment AssetDetail on Asset {
+  chainId
+  collectionAddress
+  tokenId
+  name
+  collection {
+    chainId
+    address
+    name
+    standard
+  }
+  quantity
+  image
+  imageMimetype
+  animationUrl
+  animationMimetype
+  bestOpenOffer {
+    unitPrice
+    amount
+    currency {
+      image
+      name
+      id
+      decimals
+      symbol
+    }
+  }
+  bestListing {
+    id
+    unitPrice
+    currency {
+      image
+      name
+      id
+      decimals
+      symbol
+    }
+    maker {
+      address
+    }
+  }
+  totalListingsCount
+  totalListingsCurrencyDistinctCount
+  creator {
+    address
+    name
+    image
+    verification {
+      status
+    }
+  }
+  owned: ownership(ownerAddress: $currentAddress) {
+    quantity
+  }
+}

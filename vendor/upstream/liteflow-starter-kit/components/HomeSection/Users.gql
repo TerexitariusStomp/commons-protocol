@@ -1,0 +1,14 @@
+query FetchUsers($limit: Int!, $userIds: [Address!]!) {
+  users: accounts(condition: { addresses: $userIds }, first: $limit) {
+    nodes {
+      username
+      address
+      image
+      cover
+      name
+      verification {
+        status
+      }
+    }
+  }
+}

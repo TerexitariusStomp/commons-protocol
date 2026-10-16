@@ -8,7 +8,9 @@
     "workers/*"
   ],
   "overrides": {
-    "@metamask/sdk": "npm:empty-npm-package@1.0.0"
+    "@metamask/sdk": "npm:empty-npm-package@1.0.0",
+    "@types/react": "18.2.48",
+    "viem": "1.21.4"
   },
   "scripts": {
     "build:contracts": "cd contracts && forge build",
@@ -20,6 +22,6 @@
     "ci": "npm run licenses && npm run loc && npm run test:contracts && npm run build:web"
   },
   "devDependencies": {
-    "viem": "^2.21.0"
+    "viem": "1.21.4"
   }
 }

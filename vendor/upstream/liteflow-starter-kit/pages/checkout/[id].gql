@@ -1,0 +1,77 @@
+query Checkout($id: UUID!, $address: Address) {
+  listing(id: $id) {
+    id
+    type
+    asset {
+      chainId
+      collectionAddress
+      tokenId
+      deletedAt
+      collection {
+        chainId
+        address
+        name
+        standard
+      }
+      name
+      image
+      imageMimetype
+      creator {
+        address
+        name
+        image
+        verification {
+          status
+        }
+      }
+      owned: ownership(ownerAddress: $address) {
+        quantity
+      }
+      quantity
+      bestOpenOffer {
+        unitPrice
+        amount
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+      }
+      bestListing {
+        id
+        unitPrice
+        currency {
+          image
+          name
+          id
+          decimals
+          symbol
+        }
+        maker {
+          address
+        }
+      }
+      totalListingsCount
+      totalListingsCurrencyDistinctCount
+    }
+    maker {
+      address
+      name
+      image
+      verification {
+        status
+      }
+    }
+    unitPrice
+    availableQuantity
+    currency {
+      image
+      id
+      decimals
+      symbol
+      deletedAt
+    }
+  }
+}
