@@ -10,6 +10,17 @@ const removeImports = require('next-remove-imports')()
  */
 const nextConfig = {
   output: 'standalone',
+  env: {
+    NEXT_PUBLIC_BASE_URL:
+      process.env.NEXT_PUBLIC_BASE_URL ??
+      'https://commons-web.widespread.workers.dev',
+    NEXT_PUBLIC_INDEXER_URL:
+      process.env.NEXT_PUBLIC_INDEXER_URL ??
+      'https://commons-indexer.widespread.workers.dev',
+    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID:
+      process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? 'disabled',
+    NEXT_PUBLIC_NAME: process.env.NEXT_PUBLIC_NAME ?? 'Commons',
+  },
   experimental: {
     externalDir: true,
   },
