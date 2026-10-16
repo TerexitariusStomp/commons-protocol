@@ -1,0 +1,13 @@
+name = "commons-claims"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "commons-index"
+database_id = "REPLACE_ME"
+
+[vars]
+INDEXER = ""
+# TELEGRAM_BOT_TOKEN -> wrangler secret put TELEGRAM_BOT_TOKEN
+# EAS_CONTRACT / ATTESTER key -> wrangler secret

@@ -1,0 +1,17 @@
+name = "commons-indexer"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "commons-index"
+database_id = "REPLACE_ME"
+
+[vars]
+RPC_URL = "https://sepolia.base.org"
+FACTORY = ""
+POT = ""
+START_BLOCK = "0"
+
+[triggers]
+crons = ["*/2 * * * *"]

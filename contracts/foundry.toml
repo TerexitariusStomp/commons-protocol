@@ -1,0 +1,25 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+optimizer_runs = 1000000
+solc_version = "0.8.20"
+evm_version = "shanghai"
+auto_detect_remappings = false
+remappings = [
+  "lssvm2/=lib/lssvm2/src/",
+  "@manifoldxyz/=lib/lssvm2/lib/",
+  "manifoldxyz/=lib/lssvm2/lib/royalty-registry-solidity/contracts/",
+  "@openzeppelin/contracts/=lib/lssvm2/lib/openzeppelin-contracts/contracts/",
+  "@openzeppelin/contracts-upgradeable/=lib/lssvm2/lib/openzeppelin-contracts-upgradeable/contracts/",
+  "create3-factory/=lib/lssvm2/lib/create3-factory/src/",
+  "solmate/=lib/lssvm2/lib/solmate/src/",
+  "@prb/math/=lib/lssvm2/lib/prb-math/src/",
+  "clones-with-immutable-args/=lib/lssvm2/lib/clones-with-immutable-args/src/",
+  "ds-test/=lib/lssvm2/lib/forge-std/lib/ds-test/src/",
+  "forge-std/=lib/lssvm2/lib/forge-std/src/",
+]
+
+[profile.ci]
+fuzz_runs = 100000
+verbosity = 4

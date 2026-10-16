@@ -1,0 +1,3 @@
+[submodule "contracts/lib/lssvm2"]
+	path = contracts/lib/lssvm2
+	url = https://github.com/sudoswap/lssvm2

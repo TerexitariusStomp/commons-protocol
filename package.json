@@ -1,0 +1,25 @@
+{
+  "name": "commons-protocol",
+  "private": true,
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "workspaces": [
+    "apps/*",
+    "workers/*"
+  ],
+  "overrides": {
+    "@metamask/sdk": "file:vendor/metamask-sdk-stub"
+  },
+  "scripts": {
+    "build:contracts": "cd contracts && forge build",
+    "test:contracts": "cd contracts && forge test -vvv",
+    "build:web": "npm run build -w apps/web",
+    "licenses": "node scripts/check-licenses.mjs",
+    "loc": "bash scripts/custom-loc-budget.sh",
+    "census": "node scripts/census-artifacts.mjs",
+    "ci": "npm run licenses && npm run loc && npm run test:contracts && npm run build:web"
+  },
+  "devDependencies": {
+    "viem": "^2.21.0"
+  }
+}
