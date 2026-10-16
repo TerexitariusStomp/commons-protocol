@@ -140,6 +140,15 @@ function toAsset(row: any, ctx: Ctx) {
     },
     royalties: async (_a: any, c: Ctx) => {
       const cc = c ?? ctx;
+      // per-token: artifact → project slug → claims.royalty_bps (default 10%)
+      const p = await cc.env.DB.prepare(
+        `SELECT c.royalty_bps, a.project FROM artifacts a
+         LEFT JOIN claims c ON c.project = a.project
+         WHERE a.token_id = ?`,
+      )
+        .bind(row.token_id)
+        .first();
+      if (p?.project) return [{ value: p.royalty_bps ?? 1000 }];
       const r = await cc.env.DB.prepare(
         `SELECT value FROM royalties WHERE chain_id=? AND lower(collection_address)=?`,
       )
@@ -269,6 +278,22 @@ async function q_assets(args: any, ctx: Ctx) {
     where.push("(lower(name) LIKE ? OR lower(description) LIKE ?)");
     const s = `%${lower(cond.search)}%`;
     binds.push(s, s);
+  }
+  if (cond?.traits?.length) {
+    // AND across trait types, OR across values within a type
+    for (const t of cond.traits as { type?: string; values?: string[] }[]) {
+      if (!t?.type) continue;
+      const vals = (t.values ?? []).filter(Boolean);
+      const vSql = vals.length
+        ? ` AND t.value IN (${vals.map(() => "?").join(",")})`
+        : "";
+      where.push(
+        `EXISTS (SELECT 1 FROM asset_traits t WHERE t.chain_id=assets.chain_id
+          AND t.collection_address=assets.collection_address
+          AND t.token_id=assets.token_id AND t.type=?${vSql})`,
+      );
+      binds.push(t.type, ...vals);
+    }
   }
   if (cond?.ids?.length) {
     // AssetIdsCondition: { chainId, collectionAddress, tokenId }
@@ -530,7 +555,16 @@ async function m_checkoutApprovals(args: any, ctx: Ctx) {
       .bind(lower(m[2])).first();
     if (!pool) continue;
     const ccy = pool.token ?? "0x0000000000000000000000000000000000000000";
-    const cost = BigInt(pool.spot_price ?? "0") * BigInt(it.fillQuantity || "1");
+    let cost = BigInt(pool.spot_price ?? "0") * BigInt(it.fillQuantity || "1");
+    // Buyer pays royalty + 0.5% protocol fee on top of spot — allowance must cover it.
+    const roy = await ctx.env.DB.prepare(
+      `SELECT c.royalty_bps FROM artifacts a
+       LEFT JOIN claims c ON c.project = a.project WHERE a.token_id = ?`,
+    )
+      .bind(pool.nft_id ?? "")
+      .first();
+    const bps = BigInt(roy?.royalty_bps ?? 1000) + 50n;
+    cost += (cost * bps) / 10000n;
     byCcy.set(ccy, (byCcy.get(ccy) ?? 0n) + cost);
   }
   const out: any[] = [];

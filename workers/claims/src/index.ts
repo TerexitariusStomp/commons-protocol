@@ -5,6 +5,7 @@
 export interface Env {
   DB: D1Database;
   INDEXER: string;
+  WEB: string;
   TELEGRAM_BOT_TOKEN: string;
 }
 
@@ -52,7 +53,7 @@ async function handle(env: Env, u: TgUpdate) {
       .run();
     await tg(env, "sendMessage", {
       chat_id: chatId,
-      text: `Claim started for "${slug}". Link the treasury wallet at ${env.INDEXER}/claim/${slug} — an EAS attestation finalizes the claim.`,
+      text: `Claim started for "${slug}". Link the treasury wallet at ${env.WEB || env.INDEXER}/claim/${slug} — an EAS attestation finalizes the claim.`,
     });
   }
 }

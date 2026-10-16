@@ -156,6 +156,17 @@ async function hydrateMetadata(env: Env) {
           r.token_id
         )
         .run();
+      // link to project via metadata external_url (artizen.fund/project/<slug> or /index/p/<slug>)
+      const slug = String(meta.external_url ?? "").match(/(?:project\/|index\/p\/)([a-zA-Z0-9-]+)/)?.[1];
+      if (slug) {
+        await env.DB.prepare("UPDATE artifacts SET project=? WHERE token_id=?").bind(slug, r.token_id).run();
+        const claim = await env.DB.prepare("SELECT name FROM claims WHERE project=?").bind(slug).first();
+        await env.DB.prepare(
+          "INSERT OR REPLACE INTO asset_traits(chain_id,collection_address,token_id,type,value) VALUES(?,?,?,?,?)"
+        )
+          .bind(r.chain_id, r.collection_address, r.token_id, "project", String(claim?.name ?? slug))
+          .run();
+      }
       if (Array.isArray(meta.attributes)) {
         for (const t of meta.attributes) {
           if (!t?.trait_type) continue;
@@ -216,6 +227,43 @@ export default {
     }
     if (url.pathname === "/artifacts") {
       const { results } = await env.DB.prepare("SELECT * FROM artifacts").all();
+      return json(results);
+    }
+    // ---- claim finalization: wallet + royalty bps, signature-verified ----
+    if (url.pathname === "/claims/finalize" && req.method === "POST") {
+      const { project, wallet, royaltyBps, signature } = (await req.json()) as {
+        project?: string; wallet?: string; royaltyBps?: number; signature?: string;
+      };
+      if (!project || !wallet || !signature)
+        return json({ error: "project, wallet, signature required" }, { status: 400 });
+      const row = await env.DB.prepare("SELECT status FROM claims WHERE project=?")
+        .bind(project).first<{ status: string }>();
+      if (!row) return json({ error: "unknown project" }, { status: 404 });
+      if (row.status === "claimed" || row.status === "disputed")
+        return json({ error: `project is ${row.status}` }, { status: 409 });
+      const bps = Math.max(0, Math.min(500, Math.floor(royaltyBps ?? 1000)));
+      const message = `Commons claim\nProject: ${project}\nWallet: ${wallet}\nRoyalty bps: ${bps}`;
+      try {
+        const { verifyMessage } = await import("viem");
+        const ok = await verifyMessage({
+          address: wallet as Address, message, signature: signature as `0x${string}`,
+        });
+        if (!ok) return json({ error: "bad signature" }, { status: 401 });
+      } catch {
+        return json({ error: "verification failed" }, { status: 401 });
+      }
+      await env.DB.prepare(
+        "UPDATE claims SET wallet=?, royalty_bps=?, status='claimed', claimed_at=unixepoch() WHERE project=?"
+      ).bind(wallet.toLowerCase(), bps, project).run();
+      return json({ ok: true, project, wallet: wallet.toLowerCase(), royalty_bps: bps });
+    }
+
+    if (url.pathname === "/royalty-map") {
+      const { results } = await env.DB.prepare(
+        `SELECT a.token_id, a.project, c.wallet, c.royalty_bps, c.status
+         FROM artifacts a LEFT JOIN claims c ON c.project = a.project
+         WHERE a.project IS NOT NULL AND a.project != ''`
+      ).all();
       return json(results);
     }
 

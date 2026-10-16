@@ -31,7 +31,9 @@
     "tabs": {
       "nfts": "NFTs",
       "users": "用户",
-      "collections": "收藏品"
+      "collections": "收藏品",
+      "projects": "项目",
+      "funds": "基金"
     },
     "nfts": {
       "filter": "过滤 器",
@@ -76,6 +78,23 @@
           "14dVolDesc": "交易量: 14天",
           "28dVolDesc": "交易量: 28天"
         }
+      }
+    },
+    "projects": {
+      "claimed": "已认领",
+      "artifacts": "{{count}} 件艺术品",
+      "shortfall": "${{amount}} 缺口",
+      "share": "销售额的{{pct}}%支持该项目",
+      "empty": {
+        "title": "暂无项目",
+        "description": "尚无关联艺术品的项目。"
+      }
+    },
+    "funds": {
+      "projects": "{{count}} 个项目",
+      "empty": {
+        "title": "暂无基金",
+        "description": "尚无活跃基金。"
       }
     }
   },
@@ -144,7 +163,8 @@
         "explorer": "在资源管理器上查看",
         "media": "查看媒体",
         "metadata": "查看元数据"
-      }
+      },
+      "supportsProject": "每笔销售额的{{pct}}%支持{{project}}"
     },
     "form": {
       "title": {

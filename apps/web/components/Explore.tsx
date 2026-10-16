@@ -59,6 +59,26 @@ const ExploreTemplate: FC<{
               {t('explore.tabs.users')}
             </Text>
           </Tab>
+          <Tab
+            as={Link}
+            href={`/explore/projects${searchParam}`}
+            pb={4}
+            whiteSpace="nowrap"
+          >
+            <Text as="span" variant="subtitle1">
+              {t('explore.tabs.projects')}
+            </Text>
+          </Tab>
+          <Tab
+            as={Link}
+            href={`/explore/funds${searchParam}`}
+            pb={4}
+            whiteSpace="nowrap"
+          >
+            <Text as="span" variant="subtitle1">
+              {t('explore.tabs.funds')}
+            </Text>
+          </Tab>
         </TabList>
       </Tabs>
       {children}

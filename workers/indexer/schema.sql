@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS claims (
   shortfall TEXT,
   status TEXT DEFAULT 'unclaimed', -- unclaimed|pending|claimed|disputed
   wallet TEXT,
+  name TEXT,
+  royalty_bps INTEGER,
   telegram_chat TEXT,
   attestation TEXT,
   claimed_at INTEGER

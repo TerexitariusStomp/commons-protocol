@@ -31,7 +31,9 @@
     "tabs": {
       "nfts": "NFTs",
       "users": "ユーザー",
-      "collections": "コレクション"
+      "collections": "コレクション",
+      "projects": "プロジェクト",
+      "funds": "ファンド"
     },
     "nfts": {
       "filter": "フィルター",
@@ -76,6 +78,23 @@
           "14dVolDesc": "ボリューム: 14時間",
           "28dVolDesc": "ボリューム: 28時間"
         }
+      }
+    },
+    "projects": {
+      "claimed": "請求済み",
+      "artifacts": "{{count}} アーティファクト",
+      "shortfall": "${{amount}} 不足分",
+      "share": "売上の{{pct}}%がこのプロジェクトへ",
+      "empty": {
+        "title": "プロジェクトなし",
+        "description": "アーティファクトに紐付くプロジェクトはまだありません。"
+      }
+    },
+    "funds": {
+      "projects": "{{count}} プロジェクト",
+      "empty": {
+        "title": "ファンドなし",
+        "description": "アクティブなファンドはまだありません。"
       }
     }
   },
@@ -144,7 +163,8 @@
         "explorer": "エクスプローラーで見る",
         "media": "メディアを見る",
         "metadata": "メタデータを表示"
-      }
+      },
+      "supportsProject": "各売上の{{pct}}%が{{project}}を支援"
     },
     "form": {
       "title": {

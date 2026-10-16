@@ -31,7 +31,9 @@
     "tabs": {
       "nfts": "NFTs",
       "users": "Users",
-      "collections": "Collections"
+      "collections": "Collections",
+      "projects": "Projects",
+      "funds": "Funds"
     },
     "nfts": {
       "filter": "Filters",
@@ -76,6 +78,23 @@
           "14dVolDesc": "Volume: 14d",
           "28dVolDesc": "Volume: 28d"
         }
+      }
+    },
+    "projects": {
+      "claimed": "Claimed",
+      "artifacts": "{{count}} artifacts",
+      "shortfall": "${{amount}} shortfall",
+      "share": "{{pct}}% of sales fund this project",
+      "empty": {
+        "title": "No projects",
+        "description": "No artifact-linked projects yet."
+      }
+    },
+    "funds": {
+      "projects": "{{count}} projects",
+      "empty": {
+        "title": "No funds",
+        "description": "No active funds yet."
       }
     }
   },
@@ -144,7 +163,8 @@
         "explorer": "View on explorer",
         "media": "View media",
         "metadata": "View metadata"
-      }
+      },
+      "supportsProject": "{{pct}}% of each sale supports {{project}}"
     },
     "form": {
       "title": {

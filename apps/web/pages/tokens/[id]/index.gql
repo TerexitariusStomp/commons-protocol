@@ -52,6 +52,9 @@ query FetchAsset(
     owned: ownership(ownerAddress: $address) {
       quantity
     }
+    royalties {
+      value
+    }
   }
   ownerships(
     condition: {

@@ -1,5 +1,6 @@
 import {
   AspectRatio,
+  Badge,
   Box,
   Center,
   Flex,
@@ -100,6 +101,15 @@ const DetailPage: NextPage = () => {
 
   const traits = asset && asset.traits.nodes.length > 0 && asset.traits.nodes
 
+  const projectTrait = useMemo(
+    () => asset?.traits.nodes.find((x) => x.type === 'project'),
+    [asset?.traits.nodes],
+  )
+  const royaltyBps = useMemo(
+    () => asset?.royalties?.[0]?.value,
+    [asset?.royalties],
+  )
+
   const tabIndex = useMemo(
     () => (query.filter ? tabs.findIndex((tab) => tab === query.filter) : 0),
     [query.filter],
@@ -193,6 +203,20 @@ const DetailPage: NextPage = () => {
               >
                 {!asset ? <Skeleton height="1em" width="300px" /> : asset.name}
               </Heading>
+              {asset && projectTrait && (
+                <Link
+                  href={`/explore?collection=${asset.chainId}-${asset.collectionAddress}&traits[project]=${encodeURIComponent(
+                    projectTrait.value,
+                  )}`}
+                >
+                  <Badge colorScheme="brand" fontSize="sm" px={2} py={1}>
+                    {t('asset.detail.supportsProject', {
+                      pct: ((royaltyBps ?? 1000) / 100).toString(),
+                      project: projectTrait.value,
+                    })}
+                  </Badge>
+                </Link>
+              )}
             </Stack>
             {asset && (
               <Flex direction="row" align="flex-start" gap={3}>
