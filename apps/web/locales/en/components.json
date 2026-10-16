@@ -515,7 +515,8 @@
     "community": "Community",
     "allocate": "Allocate",
     "pot": "The Pot",
-    "how": "How it works"
+    "how": "How it works",
+    "whitepaper": "Whitepaper"
   },
   "network-selection": {
     "title": "Wrong network",

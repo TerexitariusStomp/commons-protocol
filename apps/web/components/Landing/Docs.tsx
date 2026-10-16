@@ -20,6 +20,7 @@ const REPO = 'https://github.com/TerexitariusStomp/commons-protocol/blob/master'
 const Docs: FC = () => {
   const { t } = useTranslation('templates')
   const docs = [
+    { icon: FaBookOpen, title: t('landing.docs.whitepaper'), desc: t('landing.docs.whitepaper-desc'), href: '/whitepaper' },
     { icon: FaBookOpen, title: 'README', desc: t('landing.docs.readme'), href: `${REPO}/README.md` },
     { icon: FaListUl, title: 'OSS Inventory', desc: t('landing.docs.oss'), href: `${REPO}/docs/OSS-INVENTORY.md` },
     { icon: FaFileInvoice, title: 'Licenses', desc: t('landing.docs.licenses'), href: `${REPO}/docs/LICENSES.md` },
@@ -36,9 +37,9 @@ const Docs: FC = () => {
             {t('landing.docs.title')}
           </Heading>
         </Box>
-        <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4} maxW="5xl" mx="auto">
+        <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap={4} maxW="5xl" mx="auto">
           {docs.map((d, i) => (
-            <Link key={i} href={d.href} isExternal>
+            <Link key={i} href={d.href} isExternal={d.href.startsWith('http')}>
               <Flex direction="column" p={6} rounded="2xl" borderWidth="1px" h="full" _hover={{ borderColor: 'brand.500', shadow: 'sm' }} transition="all 0.15s">
                 <Icon as={d.icon} color="brand.500" boxSize={5} />
                 <Text fontWeight="bold" fontSize="sm" mt={3}>

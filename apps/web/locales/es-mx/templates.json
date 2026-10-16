@@ -476,9 +476,6 @@
       "stat3": "Fondos"
     },
     "pillars": {
-      "pill": "El protocolo",
-      "title": "¿Qué es Commons?",
-      "desc": "Un mercado donde la cultura financia los bienes comunes: las ventas llevan comisiones de protocolo y regalías por proyecto a un endowment que multiplica el financiamiento comunitario.",
       "1": {
         "tag": "Pilar 1 · Mercado",
         "title": "Un mercado NFT abierto",
@@ -493,7 +490,10 @@
         "tag": "Pilar 3 · Financiamiento",
         "title": "Las ventas financian proyectos",
         "desc": "Cada proyecto configura una parte de sus ventas (hasta 5%), en custodia del Pot hasta que el proyecto la reclame con su billetera de tesorería."
-      }
+      },
+      "pill": "El protocolo",
+      "title": "¿Qué es Commons?",
+      "desc": "Un mercado donde la cultura financia los bienes comunes: las ventas llevan comisiones de protocolo y regalías por proyecto a un endowment que multiplica el financiamiento comunitario."
     },
     "genesis": {
       "pill": "Colección génesis",
@@ -561,7 +561,9 @@
       "readme": "Visión general del protocolo y arquitectura",
       "oss": "Cada dependencia y su licencia",
       "licenses": "Inventario de licencias del stack",
-      "contracts": "Fuente Solidity: pools, Pot, motor de regalías"
+      "contracts": "Fuente Solidity: pools, Pot, motor de regalías",
+      "whitepaper": "Whitepaper",
+      "whitepaper-desc": "El documento completo del protocolo — cada elemento en lenguaje sencillo"
     },
     "faq": {
       "title": "Preguntas",
@@ -721,5 +723,11 @@
   "pot": {
     "wealth": "El Pot es el endowment del protocolo: cada depósito es poder de matching permanente. Su rendimiento — nunca su principal — se gasta cada temporada, dividido entre fondos por puntos de miembros.",
     "endowNote": "Endosar gana {{points}} puntos por $1 — los puntos dirigen la asignación de la temporada en Asignar."
+  },
+  "whitepaper": {
+    "title": "Whitepaper de Commons",
+    "desc": "El whitepaper del Protocolo Commons — el mercado, el Pot, los fondos de matching, los puntos y la hoja de ruta, en lenguaje sencillo.",
+    "toc": "Contenido",
+    "error": "No se pudo cargar el whitepaper. Inténtalo de nuevo."
   }
 }

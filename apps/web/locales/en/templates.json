@@ -476,9 +476,6 @@
       "stat3": "Funds"
     },
     "pillars": {
-      "pill": "The protocol",
-      "title": "What is Commons?",
-      "desc": "A marketplace where culture funds the commons: sales carry protocol fees and per-project royalties into a yield-bearing endowment that matches community funding.",
       "1": {
         "tag": "Pillar 1 · Marketplace",
         "title": "An open NFT marketplace",
@@ -493,7 +490,10 @@
         "tag": "Pillar 3 · Funding",
         "title": "Sales fund projects",
         "desc": "Each project sets a configurable share of its artifact sales (capped at 5%), escrowed by the Pot until the project claims it with its treasury wallet."
-      }
+      },
+      "pill": "The protocol",
+      "title": "What is Commons?",
+      "desc": "A marketplace where culture funds the commons: sales carry protocol fees and per-project royalties into a yield-bearing endowment that matches community funding."
     },
     "genesis": {
       "pill": "Genesis collection",
@@ -561,7 +561,9 @@
       "readme": "Protocol overview and architecture",
       "oss": "Every upstream dependency and its license",
       "licenses": "License inventory for the stack",
-      "contracts": "Solidity source: pools, Pot, royalty engine"
+      "contracts": "Solidity source: pools, Pot, royalty engine",
+      "whitepaper": "Whitepaper",
+      "whitepaper-desc": "The full protocol paper — every element in plain language"
     },
     "faq": {
       "title": "Questions",
@@ -721,5 +723,11 @@
   "pot": {
     "wealth": "The Pot is the protocol’s endowment: every deposit is permanent matching power. Its yield — not its principal — is spent each season, split across funds by member points.",
     "endowNote": "Endowing earns {{points}} points per $1 — points steer the season’s allocation on the Allocate page."
+  },
+  "whitepaper": {
+    "title": "Commons Whitepaper",
+    "desc": "The Commons Protocol whitepaper — the marketplace, the Pot, matching funds, points, and the roadmap, in plain language.",
+    "toc": "Contents",
+    "error": "The whitepaper could not be loaded. Please try again."
   }
 }

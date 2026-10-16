@@ -149,6 +149,9 @@ const DrawerMenu: FC<{
             <Link href="/how">
               <NavItemMobile>{t('navbar.how')}</NavItemMobile>
             </Link>
+            <Link href="/whitepaper">
+              <NavItemMobile>{t('navbar.whitepaper')}</NavItemMobile>
+            </Link>
             <Link href="/about">
               <NavItemMobile>{t('navbar.about')}</NavItemMobile>
             </Link>
@@ -523,6 +526,9 @@ const Navbar: FC<{
               </MenuItem>
               <MenuItem as={Link} href="/how">
                 {t('navbar.how')}
+              </MenuItem>
+              <MenuItem as={Link} href="/whitepaper">
+                {t('navbar.whitepaper')}
               </MenuItem>
             </MenuList>
           </Menu>
