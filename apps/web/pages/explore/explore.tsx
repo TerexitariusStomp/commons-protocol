@@ -182,8 +182,8 @@ const ExplorePage: NextPage = () => {
                   compact
                   columns={
                     showFilters
-                      ? { sm: 2, md: 3, lg: 4 }
-                      : { sm: 2, md: 4, lg: 6 }
+                      ? { base: 2, sm: 2, md: 3, lg: 4, xl: 5, '2xl': 6 }
+                      : { base: 2, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 7 }
                   }
                 >
                   <SkeletonTokenCard />
@@ -191,11 +191,11 @@ const ExplorePage: NextPage = () => {
               ) : assets.length > 0 ? (
                 <SimpleGrid
                   flexWrap="wrap"
-                  spacing="4"
+                  spacing="3"
                   columns={
                     showFilters
-                      ? { sm: 2, md: 3, lg: 4 }
-                      : { sm: 2, md: 4, lg: 6 }
+                      ? { base: 2, sm: 2, md: 3, lg: 4, xl: 5, '2xl': 6 }
+                      : { base: 2, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 7 }
                   }
                 >
                   {assets.map((asset, i) => (

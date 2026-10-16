@@ -90,7 +90,7 @@ const FundsExplorePage: NextPage = () => {
               {filtered.map((f) => (
                 <Link
                   key={f.id}
-                  href={`/explore?collection=1-${ARTIFACT_COLLECTION}&traits[Fund]=${encodeURIComponent(
+                  href={`/collection/1/${ARTIFACT_COLLECTION}?traits[Fund]=${encodeURIComponent(
                     f.name,
                   )}`}
                 >

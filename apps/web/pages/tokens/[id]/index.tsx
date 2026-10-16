@@ -205,7 +205,7 @@ const DetailPage: NextPage = () => {
               </Heading>
               {asset && projectTrait && (
                 <Link
-                  href={`/explore?collection=${asset.chainId}-${asset.collectionAddress}&traits[project]=${encodeURIComponent(
+                  href={`/collection/${asset.chainId}/${asset.collectionAddress}?traits[Project]=${encodeURIComponent(
                     projectTrait.value,
                   )}`}
                 >

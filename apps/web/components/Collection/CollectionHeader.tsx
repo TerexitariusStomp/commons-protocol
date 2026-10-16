@@ -1,7 +1,9 @@
 import {
+  AspectRatio,
   Box,
   Divider,
   Flex,
+  Grid,
   Heading,
   Icon,
   IconButton,
@@ -47,9 +49,12 @@ type Props = {
       } | null
     }
   }
+  /** Asset images used to render the OpenSea-style mosaic banner when the
+   * collection has no cover image. */
+  assets?: { image: string | null }[]
 }
 
-const CollectionHeader: FC<Props> = ({ collection }) => {
+const CollectionHeader: FC<Props> = ({ collection, assets }) => {
   const { t } = useTranslation('templates')
   const blockExplorer = useBlockExplorer(collection.chainId)
   const { REPORT_EMAIL } = useEnvironment()
@@ -57,12 +62,13 @@ const CollectionHeader: FC<Props> = ({ collection }) => {
     <>
       <Flex
         position="relative"
-        h={200}
+        h={{ base: 200, md: 300 }}
         w="full"
         rounded={{ base: 'none', sm: '2xl' }}
         bg="gray.200"
+        overflow="hidden"
       >
-        {collection.cover && (
+        {collection.cover ? (
           <Image
             src={collection.cover}
             alt={collection.name}
@@ -73,6 +79,31 @@ const CollectionHeader: FC<Props> = ({ collection }) => {
             borderRadius={{ base: 0, sm: '2xl' }}
             objectFit="cover"
           />
+        ) : (
+          assets &&
+          assets.length > 0 && (
+            <Grid
+              templateColumns="repeat(auto-fill, minmax(110px, 1fr))"
+              w="full"
+              gap={0}
+              aria-hidden
+            >
+              {assets
+                .filter((a) => a.image)
+                .slice(0, 60)
+                .map((a, i) => (
+                  <AspectRatio key={i} ratio={1}>
+                    <Image
+                      src={a.image as string}
+                      alt=""
+                      fill
+                      sizes="110px"
+                      objectFit="cover"
+                    />
+                  </AspectRatio>
+                ))}
+            </Grid>
+          )
         )}
         <Box
           position="absolute"

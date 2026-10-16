@@ -158,7 +158,7 @@ const CollectionPage: FC = () => {
       {!collection ? (
         <CollectionHeaderSkeleton />
       ) : (
-        <CollectionHeader collection={collection} />
+        <CollectionHeader collection={collection} assets={assets} />
       )}
 
       {!metrics ? (
@@ -242,8 +242,8 @@ const CollectionPage: FC = () => {
               compact
               columns={
                 showFilters
-                  ? { base: 1, sm: 2, md: 3, lg: 4 }
-                  : { base: 1, sm: 2, md: 4, lg: 6 }
+                  ? { base: 2, sm: 2, md: 3, lg: 4, xl: 5, '2xl': 6 }
+                  : { base: 2, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 7 }
               }
             >
               <SkeletonTokenCard />
@@ -251,11 +251,11 @@ const CollectionPage: FC = () => {
           ) : assets.length > 0 ? (
             <SimpleGrid
               flexWrap="wrap"
-              spacing="4"
+              spacing="3"
               columns={
                 showFilters
-                  ? { base: 1, sm: 2, md: 3, lg: 4 }
-                  : { base: 1, sm: 2, md: 4, lg: 6 }
+                  ? { base: 2, sm: 2, md: 3, lg: 4, xl: 5, '2xl': 6 }
+                  : { base: 2, sm: 3, md: 4, lg: 5, xl: 6, '2xl': 7 }
               }
             >
               {assets.map((asset, i) => (
